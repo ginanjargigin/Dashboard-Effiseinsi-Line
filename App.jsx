@@ -517,10 +517,15 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
 
 /* ---------------------------------- metric card --------------------------------- */
 function MetricCard({ sheetId, date, metric, updateEntry }) {
+  // State untuk menyimpan ID input mana yang sedang aktif/dipilih
+  const [focusedField, setFocusedField] = React.useState(null); // 'pcs' | 'menit' | null
+
   return (
     <div style={{ background: C.panel, border: `1px solid ${C.amber}`, borderRadius: 12, padding: 14 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <span style={{ fontWeight: 600, fontSize: 14.5 }}>{metric.name} <span style={{ color: C.muted, fontSize: 12, fontWeight: 400 }}>• CT {metric.ct}s</span></span>
+        <span style={{ fontWeight: 600, fontSize: 14.5 }}>
+          {metric.name} <span style={{ color: C.muted, fontSize: 12, fontWeight: 400 }}>• CT {metric.ct}s</span>
+        </span>
         {metric.pct !== null && (
           <span style={{ fontSize: 13, fontWeight: 600, color: statusColor(metric.pct), fontFamily: "'IBM Plex Mono', monospace" }}>
             {metric.pct.toFixed(1)}% ACT
@@ -538,7 +543,19 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
             pattern="[0-9]*"
             value={metric.pcs}
             onChange={(e) => updateEntry(sheetId, date, metric.id, "pcs", e.target.value)}
-            style={{ width: "100%", background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 10px", color: C.text, fontSize: 14 }}
+            onFocus={() => setFocusedField(`${metric.id}-pcs`)}
+            onBlur={() => setFocusedField(null)}
+            style={{ 
+              width: "100%", 
+              background: focusedField === `${metric.id}-pcs` ? "rgba(73, 185, 107, 0.5)" : C.panel2, 
+              border: `1px solid ${focusedField === `${metric.id}-pcs` ? C.good : C.line}`, 
+              borderRadius: 8, 
+              padding: "8px 10px", 
+              color: C.text, 
+              fontSize: 14,
+              outline: "none",
+              transition: "background-color 0.2s ease, border-color 0.2s ease"
+            }}
           />
         </div>
 
@@ -552,7 +569,19 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
             pattern="[0-9]*"
             value={metric.menit}
             onChange={(e) => updateEntry(sheetId, date, metric.id, "menit", e.target.value)}
-            style={{ width: "100%", background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 10px", color: C.text, fontSize: 14 }}
+            onFocus={() => setFocusedField(`${metric.id}-menit`)}
+            onBlur={() => setFocusedField(null)}
+            style={{ 
+              width: "100%", 
+              background: focusedField === `${metric.id}-menit` ? "rgba(73, 185, 107, 0.5)" : C.panel2, 
+              border: `1px solid ${focusedField === `${metric.id}-menit` ? C.good : C.line}`, 
+              borderRadius: 8, 
+              padding: "8px 10px", 
+              color: C.text, 
+              fontSize: 14,
+              outline: "none",
+              transition: "background-color 0.2s ease, border-color 0.2s ease"
+            }}
           />
         </div>
 
@@ -567,11 +596,6 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
     </div>
   );
 }
-
-/* Styles internal untuk mencegah error scope global */
-const inputIconBtnStyle = { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 10, width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", color: C.text, cursor: "pointer" };
-const inputSummaryCardStyle = { flex: 1, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px" };
-const inputSummaryLabelStyle = { fontSize: 10.5, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6 };
 
 /* --------------------------------- settings view -------------------------------- */
 function SettingsView({ sheets, addSheet, removeSheet, updateSheetName, addMetric, updateMetric, removeMetric, moveSheet }) {
