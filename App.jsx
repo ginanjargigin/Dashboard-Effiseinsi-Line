@@ -719,20 +719,40 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
     menit: r.hasData ? r.menit : 0
   }));
 
+  // Opsi pilihan bulan: menghasilkan 3 bulan ke belakang dan 2 bulan ke depan dari tahun aktif berjalan (2026)
+  const monthOptions = useMemo(() => {
+    const options = [];
+    const current = new Date(mk + "-01T00:00:00");
+    for (let i = -4; i <= 2; i++) {
+      const d = new Date(current.getFullYear(), current.getMonth() + i, 1);
+      const k = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
+      options.push({ key: k, label: d.toLocaleDateString("id-ID", { month: "long", year: "numeric" }) });
+    }
+    return options;
+  }, [mk]);
+
   return (
     <div className="print-area" style={{ padding: 20, maxWidth: 960, margin: "0 auto" }}>
       {/* Kontrol Navigasi Atas */}
       <div className="no-print" style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 18, flexWrap: "wrap" }}>
+        {/* Dropdown 1: Pilih Line Produksi */}
         <select
           value={sheetId}
           onChange={(e) => setSheetId(e.target.value)}
-          style={{ background: C.panel, color: C.text, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 12px", fontSize: 13 }}
+          style={{ background: C.panel, color: C.text, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 12px", fontSize: 13, outline: "none" }}
         >
           {sheets.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
-        <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 20, fontWeight: 700, color: C.muted }}>
-          {monthLabel(mk)}
-        </span>
+
+        {/* Dropdown 2: Ganti Bulan Aktif Dashboard */}
+        <select
+          value={mk}
+          onChange={(e) => setDate(`${e.target.value}-01`)}
+          style={{ background: C.panel, color: C.amber, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 12px", fontSize: 13, fontWeight: 600, outline: "none" }}
+        >
+          {monthOptions.map((opt) => <option key={opt.key} value={opt.key}>{opt.label}</option>)}
+        </select>
+
         <button
           onClick={() => window.print()}
           style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6, background: C.amber, color: "#1A1D20", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}
@@ -785,7 +805,7 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
       {/* 3. BAGIAN PALING BAWAH: GRAFIK TREN */}
       <div className="print-card" style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, padding: "20px 10px 10px 10px", height: 260 }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 12, paddingLeft: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>Visualisasi Tren Bulanan</div>
-        <ResponsiveContainer width="100%" height="85%">
+        <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} margin={{ top: 4, right: -10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={C.line} vertical={false} />
             <XAxis dataKey="name" tick={{ fill: C.muted, fontSize: 10 }} axisLine={{ stroke: C.line }} tickLine={false} />
