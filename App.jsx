@@ -534,18 +534,7 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
         )}
       </div>
       <div style={{ display: "flex", gap: 10 }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>ACT Min (Menit)</div>
-          <input
-            className="num-field"
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={metric.menit}
-            onChange={(e) => updateEntry(sheetId, date, metric.id, "menit", e.target.value)}
-            style={{ width: "100%", background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 10px", color: C.text, fontSize: 14 }}
-          />
-        </div>
+        {/* KOLOM PCS SEKARANG DI SINI (PERTAMA) */}
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>ACT Pcs (Total)</div>
           <input
@@ -558,6 +547,22 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
             style={{ width: "100%", background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 10px", color: C.text, fontSize: 14 }}
           />
         </div>
+
+        {/* KOLOM MENIT SEKARANG DI SINI (KEDUA) */}
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>ACT Min (Menit)</div>
+          <input
+            className="num-field"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={metric.menit}
+            onChange={(e) => updateEntry(sheetId, date, metric.id, "menit", e.target.value)}
+            style={{ width: "100%", background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 10px", color: C.text, fontSize: 14 }}
+          />
+        </div>
+
+        {/* KOLOM STD PCS TETAP DI UJUNG KANAN */}
         <div style={{ width: 70, textAlign: "right" }}>
           <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>STD Pcs</div>
           <div className="num-field" style={{ padding: "8px 0", fontSize: 14, fontWeight: 600, color: metric.pct !== null ? C.text : C.muted }}>
