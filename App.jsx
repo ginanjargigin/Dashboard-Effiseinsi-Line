@@ -433,7 +433,7 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
     <div style={{ padding: "20px", maxWidth: 720, margin: "0 auto" }}>
       {/* date nav */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
-        <IconBtn onClick={() => shiftDate(-1)}><ChevronLeft size={18} /></IconBtn>
+        <button onClick={() => shiftDate(-1)} style={inputIconBtnStyle}><ChevronLeft size={18} /></button>
         <div style={{ flex: 1, position: "relative" }}>
           <Calendar size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: C.muted }} />
           <input
@@ -441,21 +441,27 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
             value={date}
             onChange={(e) => setDate(e.target.value)}
             style={{
-              width: "100%", background: C.panel, border: `1px solid ${C.amber}`, borderRadius: 10, // Border Navigasi Tanggal Orange
+              width: "100%", background: C.panel, border: `1px solid ${C.amber}`, borderRadius: 10,
               padding: "10px 12px 10px 34px", color: C.text, fontSize: 14, fontFamily: "'IBM Plex Mono', monospace",
             }}
           />
         </div>
-        <IconBtn onClick={() => shiftDate(1)}><ChevronRight size={18} /></IconBtn>
-        <IconBtn onClick={() => setDate(todayISO())} title="Hari ini">
+        <button onClick={() => shiftDate(1)} style={inputIconBtnStyle}><ChevronRight size={18} /></button>
+        <button onClick={() => setDate(todayISO())} style={inputIconBtnStyle} title="Hari ini">
           <span style={{ fontSize: 11, fontWeight: 700 }}>HI</span>
-        </IconBtn>
+        </button>
       </div>
 
       {/* summary strip */}
       <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
-        <SummaryCard label="Total PCS" value={totalPcs.toLocaleString("id-ID")} />
-        <SummaryCard label="Rata-rata %" value={avgPct === null ? "—" : `${avgPct.toFixed(0)}%`} color={statusColor(avgPct)} />
+        <div style={inputSummaryCardStyle}>
+          <div style={inputSummaryLabelStyle}>Total PCS</div>
+          <div className="num-field" style={{ fontSize: 20, fontWeight: 600, color: C.text }}>{totalPcs.toLocaleString("id-ID")}</div>
+        </div>
+        <div style={inputSummaryCardStyle}>
+          <div style={inputSummaryLabelStyle}>Rata-rata %</div>
+          <div className="num-field" style={{ fontSize: 20, fontWeight: 600, color: statusColor(avgPct) }}>{avgPct === null ? "—" : `${avgPct.toFixed(0)}%`}</div>
+        </div>
         <button
           onClick={() => { if (Object.keys(entry).length && confirm("Hapus semua data tanggal ini untuk line ini?")) clearEntry(sheet.id, date); }}
           style={{ background: "transparent", border: `1px solid ${C.line}`, borderRadius: 10, padding: "0 14px", color: C.muted, cursor: "pointer", fontSize: 12.5, display: "flex", alignItems: "center", gap: 6 }}
@@ -512,8 +518,8 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
 /* ---------------------------------- metric card --------------------------------- */
 function MetricCard({ sheetId, date, metric, updateEntry }) {
   return (
-    <div style={{ background: C.panel, border: `1px solid ${C.amber}`, borderRadius: 12, padding: 14 }}> {/* Border luar kartu isian diganti Orange */}
-      <div style={{ display: "flex", justifyContent: "between", alignItems: "center", marginBottom: 10 }}>
+    <div style={{ background: C.panel, border: `1px solid ${C.amber}`, borderRadius: 12, padding: 14 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
         <span style={{ fontWeight: 600, fontSize: 14.5 }}>{metric.name} <span style={{ color: C.muted, fontSize: 12, fontWeight: 400 }}>• CT {metric.ct}s</span></span>
         {metric.pct !== null && (
           <span style={{ fontSize: 13, fontWeight: 600, color: statusColor(metric.pct), fontFamily: "'IBM Plex Mono', monospace" }}>
@@ -561,6 +567,11 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
     </div>
   );
 }
+
+/* Styles internal untuk mencegah error scope global */
+const inputIconBtnStyle = { background: C.panel, border: `1px solid ${C.line}`, borderRadius: 10, width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", color: C.text, cursor: "pointer" };
+const inputSummaryCardStyle = { flex: 1, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px" };
+const inputSummaryLabelStyle = { fontSize: 10.5, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6 };
 
 /* --------------------------------- settings view -------------------------------- */
 function SettingsView({ sheets, addSheet, removeSheet, updateSheetName, addMetric, updateMetric, removeMetric, moveSheet }) {
