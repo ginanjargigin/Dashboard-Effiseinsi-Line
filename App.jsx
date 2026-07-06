@@ -689,7 +689,7 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
       const v = dayEntry[m.id];
       if (!v) return;
       pcsSum += Number(v.pcs) || 0;
-      menitSum += Number(v.menit) || 0; // Akumulasi total menit dari semua varian dalam hari itu
+      menitSum += Number(v.menit) || 0;
       const p = pctAct(v.pcs, qtyStd(v.menit, m.ct));
       if (p !== null) pctList.push(p);
     });
@@ -700,12 +700,11 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
 
   const withData = dailyRows.filter((r) => r.hasData);
   const totalPcs = withData.reduce((a, r) => a + r.pcs, 0);
-  const totalMenitAll = withData.reduce((a, r) => a + r.menit, 0); // Total menit akumulatif bulanan
+  const totalMenitAll = withData.reduce((a, r) => a + r.menit, 0);
   const avgPct = withData.length ? withData.reduce((a, r) => a + (r.pct || 0), 0) / withData.length : null;
   const best = withData.length ? withData.reduce((a, b) => (b.pct > a.pct ? b : a)) : null;
   const worst = withData.length ? withData.reduce((a, b) => (b.pct < a.pct ? b : a)) : null;
 
-  // Data format untuk grafik Recharts (Kombinasi %ACT dan Menit)
   const chartData = dailyRows.map((r) => ({ 
     name: String(r.day), 
     pct: r.pct === null ? 0 : Math.round(r.pct),
@@ -745,16 +744,13 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
         <StatCard label="Hari terbaik" value={best ? `Tgl ${best.day} · ${best.pct.toFixed(0)}%` : "—"} icon={TrendingUp} color={C.good} />
       </div>
 
-      {/* Grafik Kombinasi Dual Sumbu Y */}
       <div className="print-card" style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, padding: "20px 10px 10px 10px", marginBottom: 22, height: 260 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} margin={{ top: 4, right: -10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={C.line} vertical={false} />
             <XAxis dataKey="name" tick={{ fill: C.muted, fontSize: 10 }} axisLine={{ stroke: C.line }} tickLine={false} />
             
-            {/* Sumbu Kiri: %ACT */}
             <YAxis yAxisId="left" tick={{ fill: C.amber, fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 120]} />
-            {/* Sumbu Kanan: Jumlah Menit */}
             <YAxis yAxisId="right" orientation="right" tick={{ fill: C.steel, fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 'dataMax + 60']} />
             
             <Tooltip 
@@ -768,34 +764,31 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
             />
             <ReferenceLine yAxisId="left" y={100} stroke={C.good} strokeDasharray="4 4" />
             
-            {/* Batang 1: Efisiensi (%ACT) */}
             <Bar yAxisId="left" dataKey="pct" name="pct" radius={[3, 3, 0, 0]}>
               {chartData.map((d, i) => <Cell key={i} fill={statusColor(d.pct || null)} opacity={d.pct ? 1 : 0.15} />)}
             </Bar>
-            {/* Batang 2: Jumlah Menit (Steel Blue) */}
             <Bar yAxisId="right" dataKey="menit" name="menit" fill={C.steel} radius={[3, 3, 0, 0]} opacity={0.7} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Tabel Detail Gabungan */}
       <div className="print-card" style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: C.panel2, textAlign: "left" }}>
-              <th style={th}>Tgl</th>
-              <th style={th}>Total PCS</th>
-              <th style={th}>Total Menit</th>
-              <th style={th}>%ACT</th>
+              <th style={dashTh}>Tgl</th>
+              <th style={dashTh}>Total PCS</th>
+              <th style={dashTh}>Total Menit</th>
+              <th style={dashTh}>%ACT</th>
             </tr>
           </thead>
           <tbody>
             {dailyRows.map((r) => (
               <tr key={r.iso} onClick={() => setDate(r.iso)} style={{ borderTop: `1px solid ${C.line}`, cursor: "pointer" }} className="no-print-hover">
-                <td style={td}>{r.day}</td>
-                <td className="num-field" style={td}>{r.hasData ? r.pcs.toLocaleString("id-ID") : "–"}</td>
-                <td className="num-field" style={{ ...td, color: r.hasData ? C.steel : C.muted }}>{r.hasData ? `${r.menit} m` : "–"}</td>
-                <td style={{ ...td, color: statusColor(r.pct), fontWeight: 600 }} className="num-field">
+                <td style={dashTd}>{r.day}</td>
+                <td className="num-field" style={dashTd}>{r.hasData ? r.pcs.toLocaleString("id-ID") : "–"}</td>
+                <td className="num-field" style={{ ...dashTd, color: r.hasData ? C.steel : C.muted }}>{r.hasData ? `${r.menit} m` : "–"}</td>
+                <td style={{ ...dashTd, color: statusColor(r.pct), fontWeight: 600 }} className="num-field">
                   {r.pct === null ? "–" : `${r.pct.toFixed(0)}%`}
                 </td>
               </tr>
@@ -803,6 +796,20 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+const dashTh = { padding: "9px 14px", fontSize: 11, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, fontWeight: 600 };
+const dashTd = { padding: "8px 14px" };
+
+function StatCard({ label, value, color, icon: Icon }) {
+  return (
+    <div className="print-card" style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 10, padding: 14 }}>
+      <div style={{ fontSize: 10.5, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6, display: "flex", alignItems: "center", gap: 5 }}>
+        {Icon && <Icon size={12} />} {label}
+      </div>
+      <div className="num-field" style={{ fontSize: 18, fontWeight: 700, color: color || C.text }}>{value}</div>
     </div>
   );
 }
