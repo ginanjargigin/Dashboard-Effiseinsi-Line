@@ -517,8 +517,8 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
 
 /* ---------------------------------- metric card --------------------------------- */
 function MetricCard({ sheetId, date, metric, updateEntry }) {
-  // State untuk menyimpan ID input mana yang sedang aktif/dipilih
-  const [focusedField, setFocusedField] = React.useState(null); // 'pcs' | 'menit' | null
+  // Menggunakan useState secara langsung sesuai dengan import di baris 1 file App.jsx kamu
+  const [focusedField, setFocusedField] = useState(null); 
 
   return (
     <div style={{ background: C.panel, border: `1px solid ${C.amber}`, borderRadius: 12, padding: 14 }}>
