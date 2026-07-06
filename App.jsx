@@ -680,15 +680,25 @@ function DashboardView({ sheets, sheetId, mk, monthData }) {
       const dateStr = `${mk}-${pad2(day)}`;
       const dayEntry = sheetEntries[dateStr] || {};
       
+      let totalMenitHariIni = 0;
+      let adaData = false;
+
       const metricsResults = currentSheet.metrics.map((m) => {
         const v = dayEntry[m.id];
         if (!v || !v.menit || !v.pcs) return null;
-        return { name: m.name, menit: v.menit, pct: pctAct(v.pcs, qtyStd(v.menit, m.ct)) };
+        adaData = true;
+        const menitVal = Number(v.menit) || 0;
+        totalMenitHariIni += menitVal;
+        return { name: m.name, menit: menitVal, pct: pctAct(v.pcs, qtyStd(v.menit, m.ct)) };
       }).filter(p => p !== null);
       
       const avgPct = metricsResults.length ? metricsResults.reduce((a, b) => a + b.pct, 0) / metricsResults.length : null;
       
-      data.push({ tgl: pad2(day), efisiensi: avgPct ? Math.round(avgPct) : null });
+      data.push({ 
+        tgl: pad2(day), 
+        efisiensi: avgPct ? Math.round(avgPct) : null,
+        menit: adaData ? totalMenitHariIni : null
+      });
       
       if (avgPct !== null) {
         history.push({ date: dateStr.slice(8), metrics: metricsResults });
@@ -699,36 +709,59 @@ function DashboardView({ sheets, sheetId, mk, monthData }) {
 
   return (
     <div style={{ padding: "20px", maxWidth: 800, margin: "0 auto" }}>
-      {/* Grafik */}
-      <div style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, padding: "20px 14px", height: 320, marginBottom: 20 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 16 }}>Tren Efisiensi Line {currentSheet.name}</div>
-        <ResponsiveContainer width="100%" height="90%">
-          <BarChart data={chartData} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
+      {/* Grafik Kombinasi: Efisiensi & Menit */}
+      <div style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, padding: "20px 14px", height: 350, marginBottom: 20 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
+          <span>Tren Efisiensi & Durasi Kerja Line {currentSheet.name}</span>
+          <div style={{ display: "flex", gap: 12, fontSize: 11 }}>
+            <span style={{ color: C.amber }}>■ % ACT</span>
+            <span style={{ color: C.steel }}>■ Durasi (Menit)</span>
+          </div>
+        </div>
+        <ResponsiveContainer width="100%" height="85%">
+          <BarChart data={chartData} margin={{ top: 5, right: -20, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={C.line} vertical={false} />
-            <XAxis dataKey="tgl" stroke={C.muted} fontSize={10} />
-            <YAxis domain={[0, 120]} stroke={C.muted} fontSize={10} />
-            <Tooltip contentStyle={{ background: C.panel2, borderRadius: 8, borderColor: C.line, fontSize: 12 }} />
-            <Bar dataKey="efisiensi" radius={[4, 4, 0, 0]}>
+            <XAxis dataKey="tgl" stroke={C.muted} fontSize={10} tickLine={false} />
+            
+            {/* Sumbu Y Kiri untuk Efisiensi % */}
+            <YAxis yAxisId="left" domain={[0, 120]} stroke={C.amber} fontSize={10} tickLine={false} />
+            {/* Sumbu Y Kanan untuk Jumlah Menit */}
+            <YAxis yAxisId="right" orientation="right" domain={[0, 'dataMax + 100']} stroke={C.steel} fontSize={10} tickLine={false} />
+            
+            <Tooltip 
+              contentStyle={{ background: C.panel2, borderRadius: 8, borderColor: C.line, fontSize: 12 }}
+              formatter={(value, name) => {
+                if (name === "efisiensi") return [`${value}%`, "Efisiensi (% ACT)"];
+                if (name === "menit") return [`${value} m`, "Total Kerja (Menit)"];
+                return [value, name];
+              }}
+            />
+            
+            {/* Bar 1: Efisiensi */}
+            <Bar yAxisId="left" dataKey="efisiensi" name="efisiensi" radius={[3, 3, 0, 0]}>
               {chartData.map((e, i) => <Cell key={i} fill={e.efisiensi ? statusColor(e.efisiensi) : "transparent"} />)}
             </Bar>
+            
+            {/* Bar 2: Menit Kerja */}
+            <Bar yAxisId="right" dataKey="menit" name="menit" fill={C.steel} radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      {/* History Table untuk Memudahkan Input */}
+      {/* Riwayat Bagian Bawah */}
       <div style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, padding: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 12 }}>Riwayat Input Terakhir</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 12 }}>Riwayat Performa Terakhir</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {historyData.length === 0 && <div style={{ color: C.muted, fontSize: 13 }}>Belum ada data history bulan ini.</div>}
           {historyData.map((h, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", borderBottom: `1px solid ${C.line}`, paddingBottom: 8 }}>
-              <div style={{ width: 40, fontWeight: 700, color: C.amber }}>Tgl {h.date}</div>
+              <div style={{ width: 45, fontWeight: 700, color: C.amber, fontSize: 12.5 }}>Tgl {h.date}</div>
               <div style={{ flex: 1, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {h.metrics.map((m, idx) => (
                   <div key={idx} style={{ background: C.panel2, padding: "4px 8px", borderRadius: 6, fontSize: 12 }}>
                     <span style={{ color: C.muted }}>{m.name}: </span>
-                    <span style={{ fontWeight: 600 }}>{m.menit}m</span> / 
-                    <span style={{ color: statusColor(m.pct), marginLeft: 4 }}>{m.pct.toFixed(0)}%</span>
+                    <span style={{ fontWeight: 600, color: C.text }}>{m.menit}m</span> / 
+                    <span style={{ color: statusColor(m.pct), marginLeft: 4, fontWeight: 600 }}>{m.pct.toFixed(0)}%</span>
                   </div>
                 ))}
               </div>
