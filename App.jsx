@@ -569,21 +569,23 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
   for (let d = 1; d <= dim; d++) {
     const iso = `${mk}-${pad2(d)}`;
     const dayEntry = sheetData[iso];
-    if (!dayEntry) { dailyRows.push({ day: d, iso, pcs: 0, pct: null, hasData: false }); continue; }
-    let pcsSum = 0, pctList = [];
+   if (!dayEntry) { dailyRows.push({ day: d, iso, pcs: 0, menit: 0, pct: null, hasData: false }); continue; }
+    let pcsSum = 0, menitSum = 0, pctList = [];
     sheet.metrics.forEach((m) => {
       const v = dayEntry[m.id];
       if (!v) return;
       pcsSum += Number(v.pcs) || 0;
+      menitSum += Number(v.menit) || 0;
       const p = pctAct(v.pcs, qtyStd(v.menit, m.ct));
       if (p !== null) pctList.push(p);
     });
     const avg = pctList.length ? pctList.reduce((a, b) => a + b, 0) / pctList.length : null;
-    dailyRows.push({ day: d, iso, pcs: pcsSum, pct: avg, hasData: true });
+    dailyRows.push({ day: d, iso, pcs: pcsSum, menit: menitSum, pct: avg, hasData: true });
+
   }
 
   const withData = dailyRows.filter((r) => r.hasData);
-  const totalPcs = withData.reduce((a, r) => a + r.pcs, 0);
+  const totalMenit = withData.reduce((a, r) => a + r.menit, 0);
   const avgPct = withData.length ? withData.reduce((a, r) => a + (r.pct || 0), 0) / withData.length : null;
   const best = withData.length ? withData.reduce((a, b) => (b.pct > a.pct ? b : a)) : null;
   const worst = withData.length ? withData.reduce((a, b) => (b.pct < a.pct ? b : a)) : null;
@@ -617,7 +619,7 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
       <div style={{ color: C.muted, fontSize: 13, marginBottom: 18 }}>{monthLabel(mk)} · Rekap efisiensi harian</div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px,1fr))", gap: 10, marginBottom: 22 }}>
-        <StatCard label="Total PCS" value={totalPcs.toLocaleString("id-ID")} />
+        <StatCard label="Total Menit" value={totalMenit.toLocaleString("id-ID")} />
         <StatCard label="Rata-rata %ACT" value={avgPct === null ? "—" : `${avgPct.toFixed(1)}%`} color={statusColor(avgPct)} />
         <StatCard label="Hari terbaik" value={best ? `Tgl ${best.day} · ${best.pct.toFixed(0)}%` : "—"} icon={TrendingUp} color={C.good} />
         <StatCard label="Hari terlemah" value={worst ? `Tgl ${worst.day} · ${worst.pct.toFixed(0)}%` : "—"} icon={TrendingDown} color={C.bad} />
@@ -643,7 +645,7 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
           <thead>
             <tr style={{ background: C.panel2, textAlign: "left" }}>
               <th style={th}>Tgl</th>
-              <th style={th}>Total PCS</th>
+              <th style={th}>Menit</th>
               <th style={th}>%ACT</th>
             </tr>
           </thead>
@@ -651,7 +653,7 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
             {dailyRows.map((r) => (
               <tr key={r.iso} onClick={() => setDate(r.iso)} style={{ borderTop: `1px solid ${C.line}`, cursor: "pointer" }} className="no-print-hover">
                 <td style={td}>{r.day}</td>
-                <td className="num-field" style={td}>{r.hasData ? r.pcs.toLocaleString("id-ID") : "–"}</td>
+                <td className="num-field" style={td}>{r.hasData ? r.menit.toLocaleString("id-ID") : "–"}</td>
                 <td style={{ ...td, color: statusColor(r.pct), fontWeight: 600 }} className="num-field">
                   {r.pct === null ? "–" : `${r.pct.toFixed(0)}%`}
                 </td>
