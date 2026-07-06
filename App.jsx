@@ -666,108 +666,142 @@ function SettingsView({ sheets, addSheet, removeSheet, updateSheetName, addMetri
   );
 }
 
-/* ---------------------------------- dashboard view --------------------------------- */
-function DashboardView({ sheets, sheetId, mk, monthData }) {
-  const currentSheet = sheets.find((s) => s.id === sheetId) || sheets[0];
-  const totalDays = daysInMonth(mk);
-  
-  const { chartData, historyData } = useMemo(() => {
-    const data = [];
-    const history = [];
-    const sheetEntries = monthData[currentSheet.id] || {};
-    
-    for (let day = 1; day <= totalDays; day++) {
-      const dateStr = `${mk}-${pad2(day)}`;
-      const dayEntry = sheetEntries[dateStr] || {};
-      
-      let totalMenitHariIni = 0;
-      let adaData = false;
+/* -------------------------------- dashboard view -------------------------------- */
+function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) {
+  const sheet = sheets.find((s) => s.id === sheetId) || sheets[0];
+  const dim = daysInMonth(mk);
+  const sheetData = monthData[sheet.id] || {};
 
-      const metricsResults = currentSheet.metrics.map((m) => {
-        const v = dayEntry[m.id];
-        if (!v || !v.menit || !v.pcs) return null;
-        adaData = true;
-        const menitVal = Number(v.menit) || 0;
-        totalMenitHariIni += menitVal;
-        return { name: m.name, menit: menitVal, pct: pctAct(v.pcs, qtyStd(v.menit, m.ct)) };
-      }).filter(p => p !== null);
-      
-      const avgPct = metricsResults.length ? metricsResults.reduce((a, b) => a + b.pct, 0) / metricsResults.length : null;
-      
-      data.push({ 
-        tgl: pad2(day), 
-        efisiensi: avgPct ? Math.round(avgPct) : null,
-        menit: adaData ? totalMenitHariIni : null
-      });
-      
-      if (avgPct !== null) {
-        history.push({ date: dateStr.slice(8), metrics: metricsResults });
-      }
+  const dailyRows = [];
+  for (let d = 1; d <= dim; d++) {
+    const iso = `${mk}-${pad2(d)}`;
+    const dayEntry = sheetData[iso];
+    if (!dayEntry) { 
+      dailyRows.push({ day: d, iso, pcs: 0, menit: 0, pct: null, hasData: false }); 
+      continue; 
     }
-    return { chartData: data, historyData: history.reverse().slice(0, 5) };
-  }, [currentSheet, mk, monthData, totalDays]);
+    
+    let pcsSum = 0;
+    let menitSum = 0;
+    let pctList = [];
+    
+    sheet.metrics.forEach((m) => {
+      const v = dayEntry[m.id];
+      if (!v) return;
+      pcsSum += Number(v.pcs) || 0;
+      menitSum += Number(v.menit) || 0; // Akumulasi total menit dari semua varian dalam hari itu
+      const p = pctAct(v.pcs, qtyStd(v.menit, m.ct));
+      if (p !== null) pctList.push(p);
+    });
+    
+    const avg = pctList.length ? pctList.reduce((a, b) => a + b, 0) / pctList.length : null;
+    dailyRows.push({ day: d, iso, pcs: pcsSum, menit: menitSum, pct: avg, hasData: true });
+  }
+
+  const withData = dailyRows.filter((r) => r.hasData);
+  const totalPcs = withData.reduce((a, r) => a + r.pcs, 0);
+  const totalMenitAll = withData.reduce((a, r) => a + r.menit, 0); // Total menit akumulatif bulanan
+  const avgPct = withData.length ? withData.reduce((a, r) => a + (r.pct || 0), 0) / withData.length : null;
+  const best = withData.length ? withData.reduce((a, b) => (b.pct > a.pct ? b : a)) : null;
+  const worst = withData.length ? withData.reduce((a, b) => (b.pct < a.pct ? b : a)) : null;
+
+  // Data format untuk grafik Recharts (Kombinasi %ACT dan Menit)
+  const chartData = dailyRows.map((r) => ({ 
+    name: String(r.day), 
+    pct: r.pct === null ? 0 : Math.round(r.pct),
+    menit: r.hasData ? r.menit : 0
+  }));
 
   return (
-    <div style={{ padding: "20px", maxWidth: 800, margin: "0 auto" }}>
-      {/* Grafik Kombinasi: Efisiensi & Menit */}
-      <div style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, padding: "20px 14px", height: 350, marginBottom: 20 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
-          <span>Tren Efisiensi & Durasi Kerja Line {currentSheet.name}</span>
-          <div style={{ display: "flex", gap: 12, fontSize: 11 }}>
-            <span style={{ color: C.amber }}>■ % ACT</span>
-            <span style={{ color: C.steel }}>■ Durasi (Menit)</span>
-          </div>
-        </div>
-        <ResponsiveContainer width="100%" height="85%">
-          <BarChart data={chartData} margin={{ top: 5, right: -20, left: -20, bottom: 0 }}>
+    <div className="print-area" style={{ padding: 20, maxWidth: 960, margin: "0 auto" }}>
+      <div className="no-print" style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 18, flexWrap: "wrap" }}>
+        <select
+          value={sheetId}
+          onChange={(e) => setSheetId(e.target.value)}
+          style={{ background: C.panel, color: C.text, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 12px", fontSize: 13 }}
+        >
+          {sheets.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
+        <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 20, fontWeight: 700, color: C.muted }}>
+          {monthLabel(mk)}
+        </span>
+        <button
+          onClick={() => window.print()}
+          style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6, background: C.amber, color: "#1A1D20", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+        >
+          <Printer size={14} /> Cetak
+        </button>
+      </div>
+
+      <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: 24, marginBottom: 4 }}>
+        {sheet.name}
+      </div>
+      <div style={{ color: C.muted, fontSize: 13, marginBottom: 18 }}>{monthLabel(mk)} · Rekap efisiensi harian & total menit</div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px,1fr))", gap: 10, marginBottom: 22 }}>
+        <StatCard label="Total PCS" value={totalPcs.toLocaleString("id-ID")} />
+        <StatCard label="Total Menit" value={`${totalMenitAll.toLocaleString("id-ID")} m`} color={C.steel} />
+        <StatCard label="Rata-rata %ACT" value={avgPct === null ? "—" : `${avgPct.toFixed(1)}%`} color={statusColor(avgPct)} />
+        <StatCard label="Hari terbaik" value={best ? `Tgl ${best.day} · ${best.pct.toFixed(0)}%` : "—"} icon={TrendingUp} color={C.good} />
+      </div>
+
+      {/* Grafik Kombinasi Dual Sumbu Y */}
+      <div className="print-card" style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, padding: "20px 10px 10px 10px", marginBottom: 22, height: 260 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={chartData} margin={{ top: 4, right: -10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={C.line} vertical={false} />
-            <XAxis dataKey="tgl" stroke={C.muted} fontSize={10} tickLine={false} />
+            <XAxis dataKey="name" tick={{ fill: C.muted, fontSize: 10 }} axisLine={{ stroke: C.line }} tickLine={false} />
             
-            {/* Sumbu Y Kiri untuk Efisiensi % */}
-            <YAxis yAxisId="left" domain={[0, 120]} stroke={C.amber} fontSize={10} tickLine={false} />
-            {/* Sumbu Y Kanan untuk Jumlah Menit */}
-            <YAxis yAxisId="right" orientation="right" domain={[0, 'dataMax + 100']} stroke={C.steel} fontSize={10} tickLine={false} />
+            {/* Sumbu Kiri: %ACT */}
+            <YAxis yAxisId="left" tick={{ fill: C.amber, fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 120]} />
+            {/* Sumbu Kanan: Jumlah Menit */}
+            <YAxis yAxisId="right" orientation="right" tick={{ fill: C.steel, fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 'dataMax + 60']} />
             
             <Tooltip 
-              contentStyle={{ background: C.panel2, borderRadius: 8, borderColor: C.line, fontSize: 12 }}
+              contentStyle={{ background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, fontSize: 12 }} 
+              labelFormatter={(l) => `Tanggal ${l}`} 
               formatter={(value, name) => {
-                if (name === "efisiensi") return [`${value}%`, "Efisiensi (% ACT)"];
-                if (name === "menit") return [`${value} m`, "Total Kerja (Menit)"];
+                if (name === "pct") return [`${value}%`, "Efisiensi (%ACT)"];
+                if (name === "menit") return [`${value} menit`, "Durasi Kerja"];
                 return [value, name];
               }}
             />
+            <ReferenceLine yAxisId="left" y={100} stroke={C.good} strokeDasharray="4 4" />
             
-            {/* Bar 1: Efisiensi */}
-            <Bar yAxisId="left" dataKey="efisiensi" name="efisiensi" radius={[3, 3, 0, 0]}>
-              {chartData.map((e, i) => <Cell key={i} fill={e.efisiensi ? statusColor(e.efisiensi) : "transparent"} />)}
+            {/* Batang 1: Efisiensi (%ACT) */}
+            <Bar yAxisId="left" dataKey="pct" name="pct" radius={[3, 3, 0, 0]}>
+              {chartData.map((d, i) => <Cell key={i} fill={statusColor(d.pct || null)} opacity={d.pct ? 1 : 0.15} />)}
             </Bar>
-            
-            {/* Bar 2: Menit Kerja */}
-            <Bar yAxisId="right" dataKey="menit" name="menit" fill={C.steel} radius={[3, 3, 0, 0]} />
+            {/* Batang 2: Jumlah Menit (Steel Blue) */}
+            <Bar yAxisId="right" dataKey="menit" name="menit" fill={C.steel} radius={[3, 3, 0, 0]} opacity={0.7} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Riwayat Bagian Bawah */}
-      <div style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, padding: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 12 }}>Riwayat Performa Terakhir</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {historyData.length === 0 && <div style={{ color: C.muted, fontSize: 13 }}>Belum ada data history bulan ini.</div>}
-          {historyData.map((h, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", borderBottom: `1px solid ${C.line}`, paddingBottom: 8 }}>
-              <div style={{ width: 45, fontWeight: 700, color: C.amber, fontSize: 12.5 }}>Tgl {h.date}</div>
-              <div style={{ flex: 1, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                {h.metrics.map((m, idx) => (
-                  <div key={idx} style={{ background: C.panel2, padding: "4px 8px", borderRadius: 6, fontSize: 12 }}>
-                    <span style={{ color: C.muted }}>{m.name}: </span>
-                    <span style={{ fontWeight: 600, color: C.text }}>{m.menit}m</span> / 
-                    <span style={{ color: statusColor(m.pct), marginLeft: 4, fontWeight: 600 }}>{m.pct.toFixed(0)}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Tabel Detail Gabungan */}
+      <div className="print-card" style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, overflow: "hidden" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <thead>
+            <tr style={{ background: C.panel2, textAlign: "left" }}>
+              <th style={th}>Tgl</th>
+              <th style={th}>Total PCS</th>
+              <th style={th}>Total Menit</th>
+              <th style={th}>%ACT</th>
+            </tr>
+          </thead>
+          <tbody>
+            {dailyRows.map((r) => (
+              <tr key={r.iso} onClick={() => setDate(r.iso)} style={{ borderTop: `1px solid ${C.line}`, cursor: "pointer" }} className="no-print-hover">
+                <td style={td}>{r.day}</td>
+                <td className="num-field" style={td}>{r.hasData ? r.pcs.toLocaleString("id-ID") : "–"}</td>
+                <td className="num-field" style={{ ...td, color: r.hasData ? C.steel : C.muted }}>{r.hasData ? `${r.menit} m` : "–"}</td>
+                <td style={{ ...td, color: statusColor(r.pct), fontWeight: 600 }} className="num-field">
+                  {r.pct === null ? "–" : `${r.pct.toFixed(0)}%`}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
