@@ -711,15 +711,13 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
   const totalPcs = withData.reduce((a, r) => a + r.pcs, 0);
   const totalMenitAll = withData.reduce((a, r) => a + r.menit, 0);
   const avgPct = withData.length ? withData.reduce((a, r) => a + (r.pct || 0), 0) / withData.length : null;
-  const best = withData.length ? withData.reduce((a, b) => (b.pct > a.pct ? b : a)) : null;
+  const best = withData.length ? withData.reduce((a, r) => (r.pct > a.pct ? r : a)) : null;
 
   const chartData = dailyRows.map((r) => ({ 
     name: String(r.day), 
-    pct: r.pct === null ? 0 : Math.round(r.pct),
-    menit: r.hasData ? r.menit : 0
+    pct: r.pct === null ? 0 : Math.round(r.pct)
   }));
 
-  // Opsi pilihan bulan: menghasilkan 3 bulan ke belakang dan 2 bulan ke depan dari tahun aktif berjalan (2026)
   const monthOptions = useMemo(() => {
     const options = [];
     const current = new Date(mk + "-01T00:00:00");
@@ -735,7 +733,6 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
     <div className="print-area" style={{ padding: 20, maxWidth: 960, margin: "0 auto" }}>
       {/* Kontrol Navigasi Atas */}
       <div className="no-print" style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 18, flexWrap: "wrap" }}>
-        {/* Dropdown 1: Pilih Line Produksi */}
         <select
           value={sheetId}
           onChange={(e) => setSheetId(e.target.value)}
@@ -744,7 +741,6 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
           {sheets.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
 
-        {/* Dropdown 2: Ganti Bulan Aktif Dashboard */}
         <select
           value={mk}
           onChange={(e) => setDate(`${e.target.value}-01`)}
@@ -766,14 +762,14 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
       </div>
       <div style={{ color: C.muted, fontSize: 13, marginBottom: 18 }}>{monthLabel(mk)} · Rekapitulasi Data harian</div>
 
-      {/* 1. HALAMAN PALING AWAL: TABEL DETAIL (Tgl, Total Menit, %ACT) */}
+      {/* 1. TABEL DETAIL: (Tgl, %ACT, Total Menit, Total PCS) */}
       <div className="print-card" style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, overflow: "hidden", marginBottom: 24 }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: C.panel2, textAlign: "left" }}>
               <th style={dashTh}>Tgl</th>
-              <th style={dashTh}>Total Menit</th>
               <th style={dashTh}>%ACT</th>
+              <th style={dashTh}>Total Menit</th>
               <th style={dashTh}>Total PCS</th>
             </tr>
           </thead>
@@ -781,10 +777,10 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
             {dailyRows.map((r) => (
               <tr key={r.iso} onClick={() => setDate(r.iso)} style={{ borderTop: `1px solid ${C.line}`, cursor: "pointer" }} className="no-print-hover">
                 <td style={dashTd}>{r.day}</td>
-                <td className="num-field" style={{ ...dashTd, color: r.hasData ? C.steel : C.muted, fontWeight: 600 }}>{r.hasData ? `${r.menit} m` : "–"}</td>
                 <td style={{ ...dashTd, color: statusColor(r.pct), fontWeight: 600 }} className="num-field">
                   {r.pct === null ? "–" : `${r.pct.toFixed(0)}%`}
                 </td>
+                <td className="num-field" style={{ ...dashTd, color: r.hasData ? C.steel : C.muted, fontWeight: 600 }}>{r.hasData ? `${r.menit} m` : "–"}</td>
                 <td className="num-field" style={{ ...dashTd, color: C.muted }}>{r.hasData ? r.pcs.toLocaleString("id-ID") : "–"}</td>
               </tr>
             ))}
@@ -794,7 +790,7 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
 
       <hr style={{ border: "none", borderBottom: `1px dashed ${C.line}`, marginBottom: 24 }} className="no-print" />
 
-      {/* 2. BAGIAN BAWAH: KARTU RINGKASAN STATISTIK */}
+      {/* 2. KARTU RINGKASAN STATISTIK */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px,1fr))", gap: 10, marginBottom: 22 }}>
         <StatCard label="Total PCS" value={totalPcs.toLocaleString("id-ID")} />
         <StatCard label="Total Menit" value={`${totalMenitAll.toLocaleString("id-ID")} m`} color={C.steel} />
@@ -802,32 +798,22 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
         <StatCard label="Hari terbaik" value={best ? `Tgl ${best.day} · ${best.pct.toFixed(0)}%` : "—"} icon={TrendingUp} color={C.good} />
       </div>
 
-      {/* 3. BAGIAN PALING BAWAH: GRAFIK TREN */}
-      <div className="print-card" style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, padding: "20px 10px 10px 10px", height: 260 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 12, paddingLeft: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>Visualisasi Tren Bulanan</div>
+      {/* 3. GRAFIK TREN: Hanya menampilkan persentase efisiensi saja */}
+      <div className="print-card" style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, padding: "16px 10px", height: 220 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 4, right: -10, left: -20, bottom: 0 }}>
+          <BarChart data={chartData} margin={{ top: 4, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={C.line} vertical={false} />
             <XAxis dataKey="name" tick={{ fill: C.muted, fontSize: 10 }} axisLine={{ stroke: C.line }} tickLine={false} />
-            
-            <YAxis yAxisId="left" tick={{ fill: C.amber, fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 120]} />
-            <YAxis yAxisId="right" orientation="right" tick={{ fill: C.steel, fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 'dataMax + 60']} />
-            
+            <YAxis tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 120]} />
             <Tooltip 
               contentStyle={{ background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, fontSize: 12 }} 
               labelFormatter={(l) => `Tanggal ${l}`} 
-              formatter={(value, name) => {
-                if (name === "pct") return [`${value}%`, "Efisiensi (%ACT)"];
-                if (name === "menit") return [`${value} menit`, "Durasi Kerja"];
-                return [value, name];
-              }}
+              formatter={(v) => [`${v}%`, "%ACT"]} 
             />
-            <ReferenceLine yAxisId="left" y={100} stroke={C.good} strokeDasharray="4 4" />
-            
-            <Bar yAxisId="left" dataKey="pct" name="pct" radius={[3, 3, 0, 0]}>
+            <ReferenceLine y={100} stroke={C.muted} strokeDasharray="4 4" />
+            <Bar dataKey="pct" radius={[4, 4, 0, 0]}>
               {chartData.map((d, i) => <Cell key={i} fill={statusColor(d.pct || null)} opacity={d.pct ? 1 : 0.15} />)}
             </Bar>
-            <Bar yAxisId="right" dataKey="menit" name="menit" fill={C.steel} radius={[3, 3, 0, 0]} opacity={0.7} />
           </BarChart>
         </ResponsiveContainer>
       </div>
