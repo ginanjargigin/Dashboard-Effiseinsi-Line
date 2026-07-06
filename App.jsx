@@ -666,7 +666,96 @@ function SettingsView({ sheets, addSheet, removeSheet, updateSheetName, addMetri
   );
 }
 
-/* -------------------------------- dummy view --------------------------------- */
-function DashboardView() {
-  return <div style={{ padding: 20, color: C.muted }}>Dashboard view placeholder (Memerlukan komponen visual terpisah).</div>;
+/* ---------------------------------- dashboard view --------------------------------- */
+function DashboardView({ sheets, sheetId, mk, monthData }) {
+  const currentSheet = sheets.find((s) => s.id === sheetId) || sheets[0];
+  
+  // Hitung jumlah hari dalam bulan aktif
+  const totalDays = daysInMonth(mk);
+  
+  // Bangun data harian untuk grafik Recharts
+  const chartData = useMemo(() => {
+    const data = [];
+    const sheetEntries = monthData[currentSheet.id] || {};
+    
+    for (let day = 1; day <= totalDays; day++) {
+      const dateStr = `${mk}-${pad2(day)}`;
+      const dayEntry = sheetEntries[dateStr] || {};
+      
+      // Ambil semua metrik/varian pada hari tersebut
+      const pcts = currentSheet.metrics.map((m) => {
+        const v = dayEntry[m.id];
+        if (!v || !v.menit || !v.pcs) return null;
+        const qs = qtyStd(v.menit, m.ct);
+        return pctAct(v.pcs, qs);
+      }).filter((p) => p !== null);
+      
+      // Jika ada data di hari tersebut, hitung rata-ratanya
+      const avgPct = pcts.length ? pcts.reduce((a, b) => a + b, 0) / pcts.length : 0;
+      
+      data.push({
+        tgl: pad2(day),
+        efisiensi: avgPct ? Math.round(avgPct) : null,
+      });
+    }
+    return data;
+  }, [currentSheet, mk, monthData, totalDays]);
+
+  // Hitung performa bulanan ringkas
+  const filledDays = chartData.filter(d => d.efisiensi !== null);
+  const monthlyAvg = filledDays.length 
+    ? Math.round(filledDays.reduce((sum, d) => sum + d.efisiensi, 0) / filledDays.length) 
+    : null;
+
+  return (
+    <div style={{ padding: "20px", maxWidth: 800, margin: "0 auto" }}>
+      {/* Ringkasan Performa */}
+      <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
+        <div style={{ flex: 1, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, padding: 16 }}>
+          <div style={{ fontSize: 11, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>
+            Rata-rata Efisiensi ({monthLabel(mk)})
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: monthlyAvg ? statusColor(monthlyAvg) : C.muted }}>
+            {monthlyAvg ? `${monthlyAvg}%` : "Belum Ada Data"}
+          </div>
+        </div>
+        <div style={{ flex: 1, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, padding: 16 }}>
+          <div style={{ fontSize: 11, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>
+            Hari Terisi Kerja
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: C.text }}>
+            {filledDays.length} <span style={{ fontSize: 14, fontWeight: 400, color: C.muted }}>dari {totalDays} hari</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Grafik Recharts */}
+      <div style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, padding: "20px 14px 10px 14px", height: 340 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+          <TrendingUp size={16} color={C.amber} /> Tren Efisiensi Harian — Line {currentSheet.name}
+        </div>
+        
+        <ResponsiveContainer width="100%" height="85%">
+          <BarChart data={chartData} margin={{ top: 10, right: 5, left: -25, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={C.line} vertical={false} />
+            <XAxis dataKey="tgl" stroke={C.muted} fontSize={11} tickLine={false} />
+            <YAxis domain={[0, 120]} stroke={C.muted} fontSize={11} tickLine={false} />
+            <Tooltip
+              cursor={{ fill: "rgba(255,255,255,0.03)" }}
+              contentStyle={{ background: C.panel2, borderColor: C.line, borderRadius: 8, color: C.text, fontSize: 12 }}
+              formatter={(value) => [`${value}% ACT`, "Efisiensi"]}
+              labelFormatter={(label) => `Tanggal: ${label}`}
+            />
+            <ReferenceLine y={100} stroke={C.good} strokeDasharray="3 3" label={{ value: 'Target 100%', fill: C.good, fontSize: 10, position: 'top' }} />
+            <ReferenceLine y={85} stroke={C.warn} strokeDasharray="3 3" label={{ value: 'Warning 85%', fill: C.warn, fontSize: 10, position: 'top' }} />
+            <Bar dataKey="efisiensi" radius={[4, 4, 0, 0]}>
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.efisiensi ? statusColor(entry.efisiensi) : "transparent"} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
 }
