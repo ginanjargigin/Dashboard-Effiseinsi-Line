@@ -431,6 +431,7 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
 
   return (
     <div style={{ padding: "20px", maxWidth: 720, margin: "0 auto" }}>
+      {/* date nav */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
         <IconBtn onClick={() => shiftDate(-1)}><ChevronLeft size={18} /></IconBtn>
         <div style={{ flex: 1, position: "relative" }}>
@@ -440,7 +441,7 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
             value={date}
             onChange={(e) => setDate(e.target.value)}
             style={{
-              width: "100%", background: C.panel, border: `1px solid ${C.line}`, borderRadius: 10,
+              width: "100%", background: C.panel, border: `1px solid ${C.amber}`, borderRadius: 10, // Border Navigasi Tanggal Orange
               padding: "10px 12px 10px 34px", color: C.text, fontSize: 14, fontFamily: "'IBM Plex Mono', monospace",
             }}
           />
@@ -451,6 +452,7 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
         </IconBtn>
       </div>
 
+      {/* summary strip */}
       <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
         <SummaryCard label="Total PCS" value={totalPcs.toLocaleString("id-ID")} />
         <SummaryCard label="Rata-rata %" value={avgPct === null ? "—" : `${avgPct.toFixed(0)}%`} color={statusColor(avgPct)} />
@@ -462,12 +464,14 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
         </button>
       </div>
 
+      {/* Kumpulan kartu metrik dengan border orange */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {rows.map((r) => (
           <MetricCard key={r.id} sheetId={sheet.id} date={date} metric={r} updateEntry={updateEntry} />
         ))}
       </div>
 
+      {/* quick nav of filled days */}
       {filledDays.length > 0 && (
         <div style={{ marginTop: 26 }}>
           <div style={{ fontSize: 11.5, color: C.muted, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.6 }}>
@@ -505,26 +509,10 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
   );
 }
 
-function IconBtn({ children, onClick, title }) {
-  return (
-    <button onClick={onClick} title={title} style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 10, width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", color: C.text, cursor: "pointer" }}>
-      {children}
-    </button>
-  );
-}
-
-function SummaryCard({ label, value, color }) {
-  return (
-    <div style={{ flex: 1, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px" }}>
-      <div style={{ fontSize: 11, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 700, color: color || C.text }}>{value}</div>
-    </div>
-  );
-}
-
+/* ---------------------------------- metric card --------------------------------- */
 function MetricCard({ sheetId, date, metric, updateEntry }) {
   return (
-    <div style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, padding: 14 }}>
+    <div style={{ background: C.panel, border: `1px solid ${C.amber}`, borderRadius: 12, padding: 14 }}> {/* Border luar kartu isian diganti Orange */}
       <div style={{ display: "flex", justifyContent: "between", alignItems: "center", marginBottom: 10 }}>
         <span style={{ fontWeight: 600, fontSize: 14.5 }}>{metric.name} <span style={{ color: C.muted, fontSize: 12, fontWeight: 400 }}>• CT {metric.ct}s</span></span>
         {metric.pct !== null && (
@@ -534,7 +522,7 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
         )}
       </div>
       <div style={{ display: "flex", gap: 10 }}>
-        {/* KOLOM PCS SEKARANG DI SINI (PERTAMA) */}
+        {/* Kolom PCS (Kiri) */}
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>ACT Pcs (Total)</div>
           <input
@@ -548,7 +536,7 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
           />
         </div>
 
-        {/* KOLOM MENIT SEKARANG DI SINI (KEDUA) */}
+        {/* Kolom Menit (Tengah) */}
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>ACT Min (Menit)</div>
           <input
@@ -562,7 +550,7 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
           />
         </div>
 
-        {/* KOLOM STD PCS TETAP DI UJUNG KANAN */}
+        {/* Kolom STD Pcs (Kanan) */}
         <div style={{ width: 70, textAlign: "right" }}>
           <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>STD Pcs</div>
           <div className="num-field" style={{ padding: "8px 0", fontSize: 14, fontWeight: 600, color: metric.pct !== null ? C.text : C.muted }}>
