@@ -422,7 +422,7 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
     return { ...m, pcs: v.pcs || "", menit: v.menit || "", qs, pct };
   });
 
-  const totalPcs = rows.reduce((a, r) => a + (Number(r.pcs) || 0), 0);
+  const totalMenitHariIni = rows.reduce((a, r) => a + (Number(r.menit) || 0), 0);
   const validRows = rows.filter((r) => r.pct !== null);
   const avgPct = validRows.length ? validRows.reduce((a, r) => a + r.pct, 0) / validRows.length : null;
 
@@ -457,16 +457,25 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
         </button>
       </div>
 
-      {/* summary strip */}
+      {/* SUMMARY STRIP — URUTAN BARU: RATA-RATA % DI KIRI, TOTAL MENIT DI TENGAH */}
       <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
-        <div style={inputSummaryCardStyle}>
-          <div style={inputSummaryLabelStyle}>Total PCS</div>
-          <div className="num-field" style={{ fontSize: 20, fontWeight: 600, color: C.text }}>{totalPcs.toLocaleString("id-ID")}</div>
-        </div>
+        {/* KARTU 1: Rata-rata % (Paling Kiri) */}
         <div style={inputSummaryCardStyle}>
           <div style={inputSummaryLabelStyle}>Rata-rata %</div>
-          <div className="num-field" style={{ fontSize: 20, fontWeight: 600, color: statusColor(avgPct) }}>{avgPct === null ? "—" : `${avgPct.toFixed(0)}%`}</div>
+          <div className="num-field" style={{ fontSize: 20, fontWeight: 600, color: statusColor(avgPct) }}>
+            {avgPct === null ? "—" : `${avgPct.toFixed(0)}%`}
+          </div>
         </div>
+
+        {/* KARTU 2: Total Menit (Di Tengah) */}
+        <div style={inputSummaryCardStyle}>
+          <div style={inputSummaryLabelStyle}>Total Menit</div>
+          <div className="num-field" style={{ fontSize: 20, fontWeight: 600, color: C.steel }}>
+            {totalMenitHariIni.toLocaleString("id-ID")} m
+          </div>
+        </div>
+
+        {/* KARTU 3: Tombol Bersihkan (Paling Kanan) */}
         <button
           onClick={() => { if (Object.keys(entry).length && confirm("Hapus semua data tanggal ini untuk line ini?")) clearEntry(sheet.id, date); }}
           style={{ background: "transparent", border: `1px solid ${C.line}`, borderRadius: 10, padding: "0 14px", color: C.muted, cursor: "pointer", fontSize: 12.5, display: "flex", alignItems: "center", gap: 6 }}
@@ -475,7 +484,7 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
         </button>
       </div>
 
-      {/* Kumpulan kartu metrik dengan border orange */}
+      {/* Kumpulan kartu metrik */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {rows.map((r) => (
           <MetricCard key={r.id} sheetId={sheet.id} date={date} metric={r} updateEntry={updateEntry} />
