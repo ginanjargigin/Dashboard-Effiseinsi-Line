@@ -6,7 +6,18 @@ import {
   Plus, Trash2, Settings, LayoutDashboard, Keyboard, Printer, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
   Check, X, AlertTriangle, TrendingUp, TrendingDown, Calendar,
 } from "lucide-react";
-
+{actualCt !== null && (
+  <span
+    style={{
+      fontSize: 13,
+      fontWeight: 600,
+      color: C.steel,
+      fontFamily: "'IBM Plex Mono', monospace",
+    }}
+  >
+    {actualCt.toFixed(3)} min/pcs
+  </span>
+)}
 /* ---------------------------------- tokens ---------------------------------- */
 const C = {
   bg: "#1A1D20",
