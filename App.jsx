@@ -6,18 +6,7 @@ import {
   Plus, Trash2, Settings, LayoutDashboard, Keyboard, Printer, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
   Check, X, AlertTriangle, TrendingUp, TrendingDown, Calendar,
 } from "lucide-react";
-{actualCt !== null && (
-  <span
-    style={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: C.steel,
-      fontFamily: "'IBM Plex Mono', monospace",
-    }}
-  >
-    {actualCt.toFixed(3)} min/pcs
-  </span>
-)}
+
 /* ---------------------------------- tokens ---------------------------------- */
 const C = {
   bg: "#1A1D20",
@@ -552,11 +541,18 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
     <div style={{ background: C.panel, border: `1px solid ${C.amber}`, borderRadius: 12, padding: 14 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
         <span style={{ fontWeight: 600, fontSize: 14.5 }}>{metric.name} <span style={{ color: C.muted, fontSize: 12, fontWeight: 400 }}>• CT {metric.ct}s</span></span>
-        {metric.pct !== null && (
-          <span style={{ fontSize: 13, fontWeight: 600, color: statusColor(metric.pct), fontFamily: "'IBM Plex Mono', monospace" }}>
-            {metric.pct.toFixed(1)}% ACT
-          </span>
-        )}
+      {actualCt !== null && (
+    <span
+        style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: C.steel,
+            fontFamily: "'IBM Plex Mono', monospace",
+        }}
+    >
+        {actualCt.toFixed(3)} min/pcs
+    </span>
+)}
       </div>
       <div style={{ display: "flex", gap: 10 }}>
         {/* Kolom PCS (Kiri) */}
