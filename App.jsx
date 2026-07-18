@@ -542,6 +542,12 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
 
 /* ---------------------------------- metric card --------------------------------- */
 function MetricCard({ sheetId, date, metric, updateEntry }) {
+
+  const actualCt =
+    Number(metric.pcs) > 0
+      ? Number(metric.menit || 0) / Number(metric.pcs)
+      : null;
+
   return (
     <div style={{ background: C.panel, border: `1px solid ${C.amber}`, borderRadius: 12, padding: 14 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
