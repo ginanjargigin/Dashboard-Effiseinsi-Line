@@ -326,9 +326,18 @@ function GlobalStyle() {
       }
       /* ATURAN BARU: Mengubah background menjadi hijau transparan 50% saat input dipilih */
       .num-field-input:focus {
+      
         background-color: rgba(73, 185, 107, 0.5) !important;
         border-color: #49B96B !important;
       }
+      button:hover{
+    transform:translateY(-2px);
+    transition:.2s;
+}
+
+button:active{
+    transform:scale(.96);
+}
       ::-webkit-scrollbar { height: 6px; width: 6px; }
       ::-webkit-scrollbar-thumb { background: ${C.line}; border-radius: 4px; }
       @media print {
@@ -438,7 +447,10 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
     <div style={{ padding: "20px", maxWidth: 720, margin: "0 auto" }}>
       {/* date nav */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
-        <button onClick={() => shiftDate(-1)} style={inputIconBtnStyle}><ChevronLeft size={18} /></button>
+        <button
+              title="Tanggal Sebelumnya"
+                onClick={() => shiftDate(-1)}
+                  style={inputIconBtnStyle}><ChevronLeft size={18} /></button>
         <div style={{ flex: 1, position: "relative" }}>
           <Calendar size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: C.muted }} />
           <input
@@ -451,8 +463,27 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
             }}
           />
         </div>
-        <button onClick={() => shiftDate(1)} style={inputIconBtnStyle}><ChevronRight size={18} /></button>
-        <button onClick={() => setDate(todayISO())} style={inputIconBtnStyle} title="Hari ini">
+        <button
+            title="Tanggal Berikutnya"
+              onClick={() => shiftDate(1)}
+                style={inputIconBtnStyle}><ChevronRight size={18} /></button>
+        <button
+    onClick={() => setDate(todayISO())}
+    title="Hari Ini"
+    style={{
+        background:C.steel,
+        border:"none",
+        color:"#fff",
+        borderRadius:10,
+        width:60,
+        height:44,
+        cursor:"pointer",
+        fontWeight:700,
+        transition:"all .2s ease"
+    }}
+>
+    HI
+</button>
           <span style={{ fontSize: 11, fontWeight: 700 }}>HI</span>
         </button>
       </div>
