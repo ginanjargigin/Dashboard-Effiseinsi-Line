@@ -153,82 +153,63 @@ export default function App() {
   }, []);
 
   const exportDbCsv = () => {
-  if (!db) return alert("Data belum tersedia");
+  if (!db) {
+    alert("Data belum tersedia");
+    return;
+  }
+
   const months = db.months || {};
   const rows = [];
-  const header = ["sheetId","sheetName","date","metricId","metricName","ct_s","pcs","menit","std_pcs","pct_act"];
-  rows.push(header);
+
+  rows.push([
+    "sheetId",
+    "sheetName",
+    "date",
+    "metricId",
+    "metricName",
+    "ct_s",
+    "pcs",
+    "menit",
+    "std_pcs",
+    "pct_act",
+  ]);
 
   db.sheets.forEach((sheet) => {
-    // iterasi semua bulan yang ada di db
-    Object.keys(months).sort().forEach((monthKey) => {
-      const monthObj = months[monthKey] || {};
-      const sheetObj = monthObj[sheet.id] || {};
-      Object.keys(sheetObj).sort().forEach((dateKey) => {
-        const day = sheetObj[dateKey] || {};
-        sheet.metrics.forEach((m) => {
-          const v = day[m.id] || {};
-          const pcs = v.pcs || "";
-          const menit = v.menit || "";
-          const qs = qtyStd(menit, m.ct);
-          const pct = pctAct(pcs, qs);
-          rows.push([sheet.id, sheet.name, dateKey, m.id, m.name, m.ct, pcs, menit, qs || "", pct === null ? "" : pct.toFixed(2)]);
-        });
+    Object.keys(months)
+      .sort()
+      .forEach((monthKey) => {
+        const monthObj = months[monthKey] || {};
+        const sheetObj = monthObj[sheet.id] || {};
+
+        Object.keys(sheetObj)
+          .sort()
+          .forEach((dateKey) => {
+            const day = sheetObj[dateKey] || {};
+
+            sheet.metrics.forEach((m) => {
+              const value = day[m.id] || {};
+
+              const pcs = value.pcs || "";
+              const menit = value.menit || "";
+
+              const stdPcs = qtyStd(menit, m.ct);
+              const pct = pctAct(pcs, stdPcs);
+
+              rows.push([
+                sheet.id,
+                sheet.name,
+                dateKey,
+                m.id,
+                m.name,
+                m.ct,
+                pcs,
+                menit,
+                stdPcs || "",
+                pct === null ? "" : pct.toFixed(2),
+              ]);
+            });
+          });
       });
-    });
-  });
-
-  // CSV-escape setiap field, gabungkan baris
-  const csv = rows
-    .map((cols) =>
-      cols
-        .map((field) => {
-          if (field === null || field === undefined) return "";
-          const s = String(field);
-          if (s.includes('"') || s.includes(",") || s.includes("\n")) {
-            return `"${s.replace(/"/g, '""')}"`;
-          }
-          return s;
-        })
-        .join(",")
-    )
-    .join("\n");
-
-  // prepend BOM supaya Excel membaca UTF-8 dengan benar
-  const blob = new Blob(["\ufeff", csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `efisiensi_export_${todayISO()}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-};
-// paste di dalam fungsi App, mis. setelah scheduleSave dan sebelum monthData
-const exportDbCsv = () => {
-  if (!db) return alert("Data belum tersedia");
-  const months = db.months || {};
-  const rows = [];
-  const header = ["sheetId","sheetName","date","metricId","metricName","ct_s","pcs","menit","std_pcs","pct_act"];
-  rows.push(header);
-
-  db.sheets.forEach((sheet) => {
-    Object.keys(months).sort().forEach((monthKey) => {
-      const monthObj = months[monthKey] || {};
-      const sheetObj = monthObj[sheet.id] || {};
-      Object.keys(sheetObj).sort().forEach((dateKey) => {
-        const day = sheetObj[dateKey] || {};
-        sheet.metrics.forEach((m) => {
-          const v = day[m.id] || {};
-          const pcs = v.pcs || "";
-          const menit = v.menit || "";
-          const qs = qtyStd(menit, m.ct);
-          const pct = pctAct(pcs, qs);
-          rows.push([sheet.id, sheet.name, dateKey, m.id, m.name, m.ct, pcs, menit, qs || "", pct === null ? "" : pct.toFixed(2)]);
-        });
-      });
-    });
   });
 
   const csv = rows
@@ -236,55 +217,109 @@ const exportDbCsv = () => {
       cols
         .map((field) => {
           if (field === null || field === undefined) return "";
+
           const s = String(field);
-          if (s.includes('"') || s.includes(",") || s.includes("\n")) {
+
+          if (
+            s.includes('"') ||
+            s.includes(",") ||
+            s.includes("\n")
+          ) {
             return `"${s.replace(/"/g, '""')}"`;
           }
+
           return s;
         })
         .join(",")
     )
     .join("\n");
 
-  const blob = new Blob(["\ufeff", csv], { type: "text/csv;charset=utf-8;" });
+  const blob = new Blob(
+    ["\ufeff", csv],
+    {
+      type: "text/csv;charset=utf-8;",
+    }
+  );
+
   const url = URL.createObjectURL(blob);
+
   const a = document.createElement("a");
   a.href = url;
   a.download = `efisiensi_export_${todayISO()}.csv`;
+
   document.body.appendChild(a);
   a.click();
   a.remove();
+
   URL.revokeObjectURL(url);
 };
-  const monthData = (db && db.months[mk]) || {};
 
-  const updateEntry = (sId, d, metricId, field, raw) => {
-    const val = clampInt(raw);
-    setDb((prev) => {
-      const next = { ...prev, months: { ...prev.months } };
-      const monthObj = { ...(next.months[mk] || {}) };
-      monthObj[sId] = { ...(monthObj[sId] || {}) };
-      monthObj[sId][d] = { ...(monthObj[sId][d] || {}) };
-      monthObj[sId][d][metricId] = { ...(monthObj[sId][d][metricId] || {}), [field]: val };
-      next.months[mk] = monthObj;
-      scheduleSave(next);
-      return next;
-    });
-  };
+const monthData = (db && db.months[mk]) || {};
 
-  const clearEntry = (sId, d) => {
-    setDb((prev) => {
-      const next = { ...prev, months: { ...prev.months } };
-      const monthObj = { ...(next.months[mk] || {}) };
-      if (monthObj[sId]) {
-        monthObj[sId] = { ...monthObj[sId] };
-        delete monthObj[sId][d];
-      }
-      next.months[mk] = monthObj;
-      scheduleSave(next);
-      return next;
-    });
-  };
+const updateEntry = (sId, d, metricId, field, raw) => {
+  const val = clampInt(raw);
+
+  setDb((prev) => {
+    const next = {
+      ...prev,
+      months: {
+        ...prev.months,
+      },
+    };
+
+    const monthObj = {
+      ...(next.months[mk] || {}),
+    };
+
+    monthObj[sId] = {
+      ...(monthObj[sId] || {}),
+    };
+
+    monthObj[sId][d] = {
+      ...(monthObj[sId][d] || {}),
+    };
+
+    monthObj[sId][d][metricId] = {
+      ...(monthObj[sId][d][metricId] || {}),
+      [field]: val,
+    };
+
+    next.months[mk] = monthObj;
+
+    scheduleSave(next);
+
+    return next;
+  });
+};
+
+const clearEntry = (sId, d) => {
+  setDb((prev) => {
+    const next = {
+      ...prev,
+      months: {
+        ...prev.months,
+      },
+    };
+
+    const monthObj = {
+      ...(next.months[mk] || {}),
+    };
+
+    if (monthObj[sId]) {
+      monthObj[sId] = {
+        ...monthObj[sId],
+      };
+
+      delete monthObj[sId][d];
+    }
+
+    next.months[mk] = monthObj;
+
+    scheduleSave(next);
+
+    return next;
+  });
+};
 
   const addSheet = (name) => {
     const s = { id: uid(), name, metrics: [{ id: uid(), name: "Std", ct: 10 }] };
