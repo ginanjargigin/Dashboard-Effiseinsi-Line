@@ -614,25 +614,24 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
             title="Tanggal Berikutnya"
               onClick={() => shiftDate(1)}
                 style={inputIconBtnStyle}><ChevronRight size={18} /></button>
-        <button
-    onClick={() => setDate(todayISO())}
-    title="Hari Ini"
-    style={{
-        background:C.steel,
-        border:"none",
-        color:"#fff",
-        borderRadius:10,
-        width:60,
-        height:44,
-        cursor:"pointer",
-        fontWeight:700,
-        transition:"all .2s ease"
-    }}
+  <button
+  onClick={() => setDate(todayISO())}
+  title="Hari Ini"
+  style={{
+    background: C.steel,
+    border: "none",
+    color: "#fff",
+    borderRadius: 10,
+    width: 60,
+    height: 44,
+    cursor: "pointer",
+    fontWeight: 700,
+    transition: "all .2s ease",
+  }}
 >
-    HI
+  HI
 </button>
-          <span style={{ fontSize: 11, fontWeight: 700 }}>HI</span>
-        </button>
+          
       </div>
 
       {/* SUMMARY STRIP — URUTAN BARU: RATA-RATA % DI KIRI, TOTAL MENIT DI TENGAH */}
