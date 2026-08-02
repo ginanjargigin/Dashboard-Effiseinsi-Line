@@ -205,7 +205,57 @@ export default function App() {
   a.remove();
   URL.revokeObjectURL(url);
 };
+// paste di dalam fungsi App, mis. setelah scheduleSave dan sebelum monthData
+const exportDbCsv = () => {
+  if (!db) return alert("Data belum tersedia");
+  const months = db.months || {};
+  const rows = [];
+  const header = ["sheetId","sheetName","date","metricId","metricName","ct_s","pcs","menit","std_pcs","pct_act"];
+  rows.push(header);
 
+  db.sheets.forEach((sheet) => {
+    Object.keys(months).sort().forEach((monthKey) => {
+      const monthObj = months[monthKey] || {};
+      const sheetObj = monthObj[sheet.id] || {};
+      Object.keys(sheetObj).sort().forEach((dateKey) => {
+        const day = sheetObj[dateKey] || {};
+        sheet.metrics.forEach((m) => {
+          const v = day[m.id] || {};
+          const pcs = v.pcs || "";
+          const menit = v.menit || "";
+          const qs = qtyStd(menit, m.ct);
+          const pct = pctAct(pcs, qs);
+          rows.push([sheet.id, sheet.name, dateKey, m.id, m.name, m.ct, pcs, menit, qs || "", pct === null ? "" : pct.toFixed(2)]);
+        });
+      });
+    });
+  });
+
+  const csv = rows
+    .map((cols) =>
+      cols
+        .map((field) => {
+          if (field === null || field === undefined) return "";
+          const s = String(field);
+          if (s.includes('"') || s.includes(",") || s.includes("\n")) {
+            return `"${s.replace(/"/g, '""')}"`;
+          }
+          return s;
+        })
+        .join(",")
+    )
+    .join("\n");
+
+  const blob = new Blob(["\ufeff", csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `efisiensi_export_${todayISO()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+};
   const monthData = (db && db.months[mk]) || {};
 
   const updateEntry = (sId, d, metricId, field, raw) => {
@@ -335,56 +385,7 @@ export default function App() {
     <div style={{ background: C.bg, minHeight: "100vh", color: C.text, fontFamily: "'Inter', sans-serif", paddingBottom: 24 }}>
       <GlobalStyle />
       <TopBar view={view} setView={setView} saveState={saveState} onExport={exportDbCsv} />
-        function TopBar({ view, setView, saveState, onExport }) {
-  const items = [
-    { id: "input", label: "Input", icon: Keyboard },
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "settings", label: "Pengaturan", icon: Settings },
-  ];
-  return (
-    <div className="no-print" style={{ borderBottom: `1px solid ${C.line}`, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-        <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: 26, letterSpacing: 0.5 }}>
-          PAPAN <span style={{ color: C.amber }}>EFISIENSI</span>
-        </span>
-        <span style={{ fontSize: 12, color: saveState === "error" ? C.bad : C.muted, fontFamily: "'IBM Plex Mono', monospace", minWidth: 60 }}>
-          {saveState === "saving" ? "menyimpan…" : saveState === "saved" ? "tersimpan ✓" : saveState === "error" ? "gagal simpan ⚠" : ""}
-        </span>
-      </div>
-
-      <div style={{ display: "flex", gap: 6, background: C.panel, padding: 4, borderRadius: 10, border: `1px solid ${C.line}`, alignItems: "center" }}>
-        {items.map((it) => {
-          const Icon = it.icon;
-          const active = view === it.id;
-          return (
-            <button
-              key={it.id}
-              onClick={() => setView(it.id)}
-              style={{
-                display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 7,
-                border: "none", cursor: "pointer", fontSize: 13.5, fontWeight: 600,
-                background: active ? C.amber : "transparent",
-                color: active ? "#1A1D20" : C.muted,
-                transition: "all .15s",
-              }}
-            >
-              <Icon size={15} /> {it.label}
-            </button>
-          );
-        })}
-
-        {/* tombol export CSV */}
-        <button
-          onClick={onExport}
-          title="Export CSV"
-          style={{ marginLeft: 8, background: "transparent", border: `1px solid ${C.line}`, borderRadius: 7, padding: "8px 10px", color: C.muted, cursor: "pointer", fontSize: 13, fontWeight: 600 }}
-        >
-          Export CSV
-        </button>
-      </div>
-    </div>
-  );
-}
+  
       <SheetTabs sheets={sheets} sheetId={sheetId} setSheetId={setSheetId} />
 
       {view === "input" && (
@@ -455,7 +456,7 @@ button:active{
 }
 
 /* ---------------------------------- top bar ----------------------------------- */
-function TopBar({ view, setView, saveState }) {
+function TopBar({ view, setView, saveState, onExport }) {
   const items = [
     { id: "input", label: "Input", icon: Keyboard },
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -471,7 +472,7 @@ function TopBar({ view, setView, saveState }) {
           {saveState === "saving" ? "menyimpan…" : saveState === "saved" ? "tersimpan ✓" : saveState === "error" ? "gagal simpan ⚠" : ""}
         </span>
       </div>
-      <div style={{ display: "flex", gap: 6, background: C.panel, padding: 4, borderRadius: 10, border: `1px solid ${C.line}` }}>
+      <div style={{ display: "flex", gap: 6, background: C.panel, padding: 4, borderRadius: 10, border: `1px solid ${C.line}`, alignItems: "center" }}>
         {items.map((it) => {
           const Icon = it.icon;
           const active = view === it.id;
@@ -491,11 +492,18 @@ function TopBar({ view, setView, saveState }) {
             </button>
           );
         })}
+
+        <button
+          onClick={onExport}
+          title="Export CSV"
+          style={{ marginLeft: 8, background: "transparent", border: `1px solid ${C.line}`, borderRadius: 7, padding: "8px 10px", color: C.muted, cursor: "pointer", fontSize: 13, fontWeight: 600 }}
+        >
+          Export CSV
+        </button>
       </div>
     </div>
   );
 }
-
 /* --------------------------------- sheet tabs ---------------------------------- */
 function SheetTabs({ sheets, sheetId, setSheetId }) {
   return (
