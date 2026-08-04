@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell,
 } from "recharts";
 import {
-  Plus, Trash2, Settings, LayoutDashboard, Keyboard, Printer, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
+  Plus, Trash2, Settings, LayoutDashboard, Keyboard, Printer,Calender, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
   Check, X, AlertTriangle, TrendingUp, TrendingDown, Calendar,FileSpreadsheet,
 } from "lucide-react";
 
@@ -111,7 +111,7 @@ async function saveDb(db) {
 export default function App() {
   const [db, setDb] = useState(null);
   const [sheetId, setSheetId] = useState(null);
-  const [date, setDate] = useState(todayISO());
+  const [date, ] = useState(todayISO());
   const [view, setView] = useState("input");
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState(null);
@@ -675,22 +675,33 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
             title="Tanggal Berikutnya"
               onClick={() => shiftDate(1)}
                 style={inputIconBtnStyle}><ChevronRight size={18} /></button>
-  <button
+<button
   onClick={() => setDate(todayISO())}
   title="Hari Ini"
   style={{
-    background: C.steel,
-    border: "none",
-    color: "#fff",
+    background: C.panel,
+    border: `1px solid ${C.amber}`,
+    color: C.text,
     borderRadius: 10,
-    width: 60,
+    minWidth: 105,
     height: 44,
+    padding: "0 14px",
     cursor: "pointer",
-    fontWeight: 700,
+    fontWeight: 600,
+    fontSize: 13,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
     transition: "all .2s ease",
   }}
 >
-  HI
+  <CalendarCheck
+    size={18}
+    color={C.amber}
+    strokeWidth={2.2}
+  />
+  <span>Hari Ini</span>
 </button>
           
       </div>
