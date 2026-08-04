@@ -1043,32 +1043,26 @@ function DashboardView({
 >
 
 <button
-    onClick={exportDbCsv}
-    style={{
-        flex:1,
-        maxWidth:180,
-        background:"#16A34A",
-        color:"#fff",
-        border:"none",
-        borderRadius:10,
-        padding:"10px 16px",
-        display:"flex",
-        alignItems:"center",
-        justifyContent:"center",
-        gap:8,
-        cursor:"pointer",
-        fontWeight:700,
-        fontSize:14,
-    }}
+  onClick={exportDbCsv}
+  style={{
+    flex: 1,
+    maxWidth: 180,
+    background: "#16A34A",
+    color: "#fff",
+    border: "none",
+    borderRadius: 10,
+    padding: "10px 16px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    cursor: "pointer",
+    fontWeight: 700,
+    fontSize: 14,
+  }}
 >
-
-<>
   <FileSpreadsheet size={18} />
- 
-</>
-
-Export CSV
-
+  <span>Export CSV</span>
 </button>
 
 <button
