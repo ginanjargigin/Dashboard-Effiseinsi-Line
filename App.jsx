@@ -4,7 +4,7 @@ import {
 } from "recharts";
 import {
   Plus, Trash2, Settings, LayoutDashboard, Keyboard, Printer, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
-  Check, X, AlertTriangle, TrendingUp, TrendingDown, Calendar,
+  Check, X, AlertTriangle, TrendingUp, TrendingDown, Calendar,FileSpreadsheet,
 } from "lucide-react";
 
 /* ---------------------------------- tokens ---------------------------------- */
@@ -1062,12 +1062,10 @@ function DashboardView({
     }}
 >
 
-<img
-    src="public/csv-icon.svg"
-    alt="CSV"
-    width={20}
-    height={20}
-/>
+<>
+  <FileSpreadsheet size={18} />
+  Export CSV
+</>
 
 Export CSV
 
