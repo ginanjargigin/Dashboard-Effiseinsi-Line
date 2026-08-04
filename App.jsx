@@ -675,7 +675,7 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
             title="Tanggal Berikutnya"
               onClick={() => shiftDate(1)}
             style={inputIconBtnStyle}><ChevronRight size={18} /></button>
-  <div>   
+
       <button
   onClick={() => setDate(todayISO())}
   title="Hari Ini"
@@ -705,7 +705,7 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
   <span>Hari Ini</span>
 </button>
           
-      </div>
+   
 
       {/* SUMMARY STRIP — URUTAN BARU: RATA-RATA % DI KIRI, TOTAL MENIT DI TENGAH */}
       <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
