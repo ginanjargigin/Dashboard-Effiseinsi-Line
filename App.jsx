@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell,
 } from "recharts";
 import {
-  Plus, Trash2, Settings, LayoutDashboard, Keyboard, Printer, Calendar,  CalendarCheck, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
+  Plus, Trash2, Settings, LayoutDashboard, Keyboard, Printer, CalendarCheck, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
   Check, X, AlertTriangle, TrendingUp, TrendingDown, Calendar,FileSpreadsheet,
 } from "lucide-react";
 
@@ -704,7 +704,7 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
   />
   <span>Hari Ini</span>
 </button>
-          
+       </div>     
    
 
       {/* SUMMARY STRIP — URUTAN BARU: RATA-RATA % DI KIRI, TOTAL MENIT DI TENGAH */}
