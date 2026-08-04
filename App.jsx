@@ -434,7 +434,15 @@ const clearEntry = (sId, d) => {
         />
       )}
       {view === "dashboard" && (
-        <DashboardView sheets={sheets} sheetId={sheetId} setSheetId={setSheetId} mk={mk} setDate={setDate} monthData={monthData} />
+       <DashboardView
+    sheets={sheets}
+    sheetId={sheetId}
+    setSheetId={setSheetId}
+    mk={mk}
+    setDate={setDate}
+    monthData={monthData}
+    exportDbCsv={exportDbCsv}
+/>
       )}
       {view === "settings" && (
         <SettingsView
@@ -528,17 +536,7 @@ function TopBar({ view, setView, saveState, onExport }) {
           );
         })}
 
-        <button
-          onClick={onExport}
-          title="Export CSV"
-          style={{ marginLeft: 8, background: "transparent", border: `1px solid ${C.line}`, borderRadius: 7, padding: "8px 10px", color: C.muted, cursor: "pointer", fontSize: 13, fontWeight: 600 }}
-        >
-          Export CSV
-        </button>
-      </div>
-    </div>
-  );
-}
+       
 /* --------------------------------- sheet tabs ---------------------------------- */
 function SheetTabs({ sheets, sheetId, setSheetId }) {
   return (
@@ -889,7 +887,15 @@ function SettingsView({ sheets, addSheet, removeSheet, updateSheetName, addMetri
 }
 
 /* -------------------------------- dashboard view -------------------------------- */
-function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) {
+function DashboardView({
+    sheets,
+    sheetId,
+    setSheetId,
+    mk,
+    setDate,
+    monthData,
+    exportDbCsv,
+}) {
   const sheet = sheets.find((s) => s.id === sheetId) || sheets[0];
   const dim = daysInMonth(mk);
   const sheetData = monthData[sheet.id] || {};
@@ -962,12 +968,75 @@ function DashboardView({ sheets, sheetId, setSheetId, mk, setDate, monthData }) 
           {monthOptions.map((opt) => <option key={opt.key} value={opt.key}>{opt.label}</option>)}
         </select>
 
-        <button
-          onClick={() => window.print()}
-          style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6, background: C.amber, color: "#1A1D20", border: "none", borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}
-        >
-          <Printer size={14} /> Cetak
-        </button>
+        <div
+    style={{
+        marginLeft: "auto",
+        display: "flex",
+        gap: 10,
+        width: "100%",
+        justifyContent: "flex-end",
+        flexWrap: "wrap",
+    }}
+>
+
+<button
+    onClick={exportDbCsv}
+    style={{
+        flex:1,
+        maxWidth:180,
+        background:"#16A34A",
+        color:"#fff",
+        border:"none",
+        borderRadius:10,
+        padding:"10px 16px",
+        display:"flex",
+        alignItems:"center",
+        justifyContent:"center",
+        gap:8,
+        cursor:"pointer",
+        fontWeight:700,
+        fontSize:14,
+    }}
+>
+
+<img
+    src="/csv-icon.svg"
+    alt="CSV"
+    width={20}
+    height={20}
+/>
+
+Export CSV
+
+</button>
+
+<button
+    onClick={() => window.print()}
+    style={{
+        flex:1,
+        maxWidth:180,
+        background:C.amber,
+        color:"#1A1D20",
+        border:"none",
+        borderRadius:10,
+        padding:"10px 16px",
+        display:"flex",
+        alignItems:"center",
+        justifyContent:"center",
+        gap:8,
+        cursor:"pointer",
+        fontWeight:700,
+        fontSize:14,
+    }}
+>
+
+<Printer size={18}/>
+
+Cetak
+
+</button>
+
+</div>
       </div>
 
       <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: 24, marginBottom: 4 }}>
