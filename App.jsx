@@ -434,14 +434,14 @@ const clearEntry = (sId, d) => {
         />
       )}
       {view === "dashboard" && (
-       <DashboardView
-    sheets={sheets}
-    sheetId={sheetId}
-    setSheetId={setSheetId}
-    mk={mk}
-    setDate={setDate}
-    monthData={monthData}
-    exportDbCsv={exportDbCsv}
+<DashboardView
+  sheets={sheets}
+  sheetId={sheetId}
+  setSheetId={setSheetId}
+  mk={mk}
+  setDate={setDate}
+  monthData={monthData}
+  exportDbCsv={exportDbCsv}
 />
       )}
       {view === "settings" && (
@@ -888,13 +888,13 @@ function SettingsView({ sheets, addSheet, removeSheet, updateSheetName, addMetri
 
 /* -------------------------------- dashboard view -------------------------------- */
 function DashboardView({
-    sheets,
-    sheetId,
-    setSheetId,
-    mk,
-    setDate,
-    monthData,
-    exportDbCsv,
+  sheets,
+  sheetId,
+  setSheetId,
+  mk,
+  setDate,
+  monthData,
+  exportDbCsv,
 }) {
   const sheet = sheets.find((s) => s.id === sheetId) || sheets[0];
   const dim = daysInMonth(mk);
