@@ -1063,7 +1063,7 @@ function DashboardView({
 >
 
 <img
-    src="/csv-icon.svg"
+    src="public/csv-icon.svg"
     alt="CSV"
     width={20}
     height={20}
