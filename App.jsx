@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell,
 } from "recharts";
 import {
-  Plus, Trash2, Settings, LayoutDashboard, Keyboard, Printer, Calender,  CalendarCheck, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
+  Plus, Trash2, Settings, LayoutDashboard, Keyboard, Printer, Calendar,  CalendarCheck, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
   Check, X, AlertTriangle, TrendingUp, TrendingDown, Calendar,FileSpreadsheet,
 } from "lucide-react";
 
@@ -111,7 +111,7 @@ async function saveDb(db) {
 export default function App() {
   const [db, setDb] = useState(null);
   const [sheetId, setSheetId] = useState(null);
-  const [date, ] = useState(todayISO());
+  const [date, setDate] = useState(todayISO());
   const [view, setView] = useState("input");
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState(null);
