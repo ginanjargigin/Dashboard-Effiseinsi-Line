@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell,
 } from "recharts";
 import {
-  Plus, Trash2, Settings, LayoutDashboard, Keyboard, Printer,Calender, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
+  Plus, Trash2, Settings, LayoutDashboard, Keyboard, Printer, Calender, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
   Check, X, AlertTriangle, TrendingUp, TrendingDown, Calendar,FileSpreadsheet,
 } from "lucide-react";
 
@@ -674,8 +674,9 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
         <button
             title="Tanggal Berikutnya"
               onClick={() => shiftDate(1)}
-                style={inputIconBtnStyle}><ChevronRight size={18} /></button>
-<button
+            style={inputIconBtnStyle}><ChevronRight size={18} /></button>
+  <div>   
+      <button
   onClick={() => setDate(todayISO())}
   title="Hari Ini"
   style={{
