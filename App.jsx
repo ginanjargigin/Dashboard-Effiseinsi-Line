@@ -522,10 +522,10 @@ function GlobalStyle() {
         background-color: rgba(73, 185, 107, 0.5) !important;
         border-color: #49B96B !important;
       }
-      .note-field:focus {
-  border-color: #F2A93B !important;
-  background-color: rgba(242, 169, 59, 0.08) !important;
-  box-shadow: 0 0 0 2px rgba(242, 169, 59, 0.18) !important;
+  .note-field:focus {
+  border-color: #49B96B !important;
+  background-color: rgba(73, 185, 107, 0.08) !important;
+  box-shadow: 0 0 0 2px rgba(73, 185, 107, 0.18) !important;
 }
       button:hover{
     transform:translateY(-2px);
