@@ -292,6 +292,49 @@ const updateEntry = (sId, d, metricId, field, raw) => {
   });
 };
 
+const updateNote = (sId, d, note) => {
+  setDb((prev) => {
+    const next = {
+      ...prev,
+      months: {
+        ...prev.months,
+      },
+    };
+
+    const monthObj = {
+      ...(next.months[mk] || {}),
+    };
+
+    monthObj[sId] = {
+      ...(monthObj[sId] || {}),
+    };
+
+    const dayObj = {
+      ...(monthObj[sId][d] || {}),
+    };
+
+    const trimmedNote = String(note ?? "");
+
+    if (trimmedNote.trim() === "") {
+      delete dayObj.note;
+    } else {
+      dayObj.note = trimmedNote;
+    }
+
+    if (Object.keys(dayObj).length === 0) {
+      delete monthObj[sId][d];
+    } else {
+      monthObj[sId][d] = dayObj;
+    }
+
+    next.months[mk] = monthObj;
+
+    scheduleSave(next);
+
+    return next;
+  });
+};
+
 const clearEntry = (sId, d) => {
   setDb((prev) => {
     const next = {
@@ -430,6 +473,7 @@ const clearEntry = (sId, d) => {
           setDate={setDate}
           monthData={monthData}
           updateEntry={updateEntry}
+          updateNote={updateNote}
           clearEntry={clearEntry}
         />
       )}
@@ -627,10 +671,11 @@ function SheetTabs({ sheets, sheetId, setSheetId }) {
 }
 
 /* ---------------------------------- input view --------------------------------- */
-function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry }) {
+function InputView({ sheet, date, setDate, monthData, updateEntry, updateNote, clearEntry }) {
   const mk = monthKeyOf(date);
   const dim = daysInMonth(mk);
   const entry = (monthData[sheet.id] && monthData[sheet.id][date]) || {};
+  const note = typeof entry.note === "string" ? entry.note : "";
 
   const rows = sheet.metrics.map((m) => {
     const v = entry[m.id] || {};
@@ -643,7 +688,18 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
   const validRows = rows.filter((r) => r.pct !== null);
   const avgPct = validRows.length ? validRows.reduce((a, r) => a + r.pct, 0) / validRows.length : null;
 
-  const filledDays = Object.keys(monthData[sheet.id] || {}).sort();
+  const filledDays = Object.keys(monthData[sheet.id] || {})
+    .filter((d) => {
+      const dayEntry = monthData[sheet.id][d] || {};
+      return sheet.metrics.some((m) => {
+        const value = dayEntry[m.id];
+        return value && (
+          value.pcs !== undefined ||
+          value.menit !== undefined
+        );
+      });
+    })
+    .sort();
 
   const shiftDate = (delta) => {
     const d = new Date(date + "T00:00:00");
@@ -706,6 +762,61 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, clearEntry })
 </button>
        </div>     
    
+
+      {/* CATATAN HARIAN — hanya tersedia di menu Input */}
+      <div
+        style={{
+          background: C.panel,
+          border: `1px solid ${C.line}`,
+          borderRadius: 12,
+          padding: 14,
+          marginBottom: 18,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 11,
+            color: C.muted,
+            textTransform: "uppercase",
+            letterSpacing: 0.6,
+            marginBottom: 7,
+            fontWeight: 600,
+          }}
+        >
+          Catatan Hari Ini
+        </div>
+
+        <textarea
+          value={note}
+          onChange={(e) => updateNote(sheet.id, date, e.target.value)}
+          placeholder="Tulis problem, kendala, downtime, atau kejadian penting hari ini..."
+          rows={4}
+          style={{
+            width: "100%",
+            resize: "vertical",
+            minHeight: 92,
+            background: C.panel2,
+            border: `1px solid ${C.line}`,
+            borderRadius: 8,
+            padding: "10px 12px",
+            color: C.text,
+            fontSize: 13,
+            lineHeight: 1.5,
+            fontFamily: "'Inter', sans-serif",
+            outline: "none",
+          }}
+        />
+
+        <div
+          style={{
+            marginTop: 6,
+            fontSize: 10.5,
+            color: C.muted,
+          }}
+        >
+          Tersimpan otomatis setelah perubahan.
+        </div>
+      </div>
 
       {/* SUMMARY STRIP — URUTAN BARU: RATA-RATA % DI KIRI, TOTAL MENIT DI TENGAH */}
       <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
