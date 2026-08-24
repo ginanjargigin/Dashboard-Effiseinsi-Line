@@ -524,7 +524,7 @@ function GlobalStyle() {
       }
   .note-field:focus {
   border-color: #49B96B !important;
-  background-color: rgba(73, 185, 107, 0.08) !important;
+  background-color: rgba(73, 185, 107, 0.5) !important;
   box-shadow: 0 0 0 2px rgba(73, 185, 107, 0.18) !important;
 }
       button:hover{
