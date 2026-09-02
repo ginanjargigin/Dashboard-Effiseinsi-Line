@@ -1009,7 +1009,7 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr 0.65fr",
+          gridTemplateColumns: "1.2fr 0.8fr 0.65fr",
           gap: 12,
           alignItems: "end",
         }}
@@ -1089,13 +1089,13 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
             onKeyDown={handleArrowNavigation}
             style={{
               width: "100%",
-              height: 66,
+              height: 52,
               background: C.panel2,
               border: `1px solid ${C.line}`,
               borderRadius: 12,
               padding: "0 16px",
               color: C.text,
-              fontSize: 23,
+              fontSize: 18,
               fontWeight: 600,
               outline: "none",
             }}
