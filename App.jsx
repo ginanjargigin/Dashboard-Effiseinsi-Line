@@ -898,11 +898,37 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, updateNote, c
 
 /* ---------------------------------- metric card --------------------------------- */
 function MetricCard({ sheetId, date, metric, updateEntry }) {
+  const pcsInputRef = useRef(null);
+  const menitInputRef = useRef(null);
 
   const actualCt =
     Number(metric.pcs) > 0
       ? Number(metric.menit || 0) / Number(metric.pcs)
       : null;
+  
+  const handleArrowNavigation = (event) => {
+  if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
+    return;
+  }
+
+  const current = event.currentTarget;
+
+  let target = null;
+
+  if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+    target = menitInputRef.current;
+  }
+
+  if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+    target = pcsInputRef.current;
+  }
+
+  if (target && target !== current) {
+    event.preventDefault();
+    target.focus();
+    target.select();
+  }
+};
 
   return (
     <div style={{ background: C.panel, border: `1px solid ${C.amber}`, borderRadius: 12, padding: 14 }}>
@@ -926,12 +952,14 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>ACT Pcs (Total)</div>
           <input
+            ref={pcsInputRef}
             className="num-field num-field-input"
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
             value={metric.pcs}
             onChange={(e) => updateEntry(sheetId, date, metric.id, "pcs", e.target.value)}
+            onKeyDown={handleArrowNavigation}
             style={{ width: "100%", background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 10px", color: C.text, fontSize: 14, outline: "none", transition: "all 0.15s ease" }}
           />
         </div>
@@ -939,13 +967,15 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
         {/* Kolom Menit (Tengah) */}
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>ACT Min (Menit)</div>
-          <input
+         <input
+            ref={menitInputRef}
             className="num-field num-field-input"
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
             value={metric.menit}
             onChange={(e) => updateEntry(sheetId, date, metric.id, "menit", e.target.value)}
+            onKeyDown={handleArrowNavigation}
             style={{ width: "100%", background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 10px", color: C.text, fontSize: 14, outline: "none", transition: "all 0.15s ease" }}
           />
         </div>
