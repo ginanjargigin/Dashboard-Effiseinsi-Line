@@ -967,8 +967,8 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: 12,
-          marginBottom: 18,
+          gap: 10,
+          marginBottom: 12,
         }}
       >
         <div
@@ -983,7 +983,7 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
           <span
             style={{
               color: C.muted,
-              fontSize: 17,
+              fontSize: 14,
               fontWeight: 500,
               marginLeft: 7,
             }}
@@ -996,7 +996,7 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
           className="num-field"
           style={{
             color: C.steel,
-            fontSize: 18,
+            fontSize: 14,
             fontWeight: 700,
             whiteSpace: "nowrap",
           }}
@@ -1010,7 +1010,7 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr 0.65fr",
-          gap: 18,
+          gap: 12,
           alignItems: "end",
         }}
       >
@@ -1045,13 +1045,13 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
             onKeyDown={handleArrowNavigation}
             style={{
               width: "100%",
-              height: 66,
+              height: 52,
               background: C.panel2,
               border: `1px solid ${C.line}`,
               borderRadius: 12,
               padding: "0 16px",
               color: C.text,
-              fontSize: 23,
+              fontSize: 18,
               fontWeight: 600,
               outline: "none",
             }}
@@ -1118,12 +1118,12 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
           <div
             className="num-field"
             style={{
-              height: 66,
+              height: 52,
               display: "flex",
               alignItems: "center",
               justifyContent: "flex-end",
               color: metric.qs ? C.text : C.muted,
-              fontSize: 23,
+              fontSize: 18,
               fontWeight: 700,
               padding: "0 8px",
             }}
