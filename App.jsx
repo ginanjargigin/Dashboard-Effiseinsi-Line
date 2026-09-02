@@ -904,11 +904,16 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
       : null;
 
   const handleArrowNavigation = (event) => {
-    const navigationKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+    const navigationKeys = [
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+    ];
 
     if (!navigationKeys.includes(event.key)) return;
 
-    // Urutan input di halaman:
+    // Urutan input:
     // PCS 1 → Menit 1 → PCS 2 → Menit 2 → PCS 3 → Menit 3 → ...
     const inputs = Array.from(
       document.querySelectorAll(".num-field-input")
@@ -921,29 +926,21 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
 
     let targetIndex;
 
-    switch (event.key) {
-      case "ArrowLeft":
-        targetIndex = currentIndex - 1;
-        break;
-
-      case "ArrowRight":
-        targetIndex = currentIndex + 1;
-        break;
-
-      // Lompat 2 input agar tetap berada di kolom yang sama.
-      case "ArrowUp":
-        targetIndex = currentIndex - 2;
-        break;
-
-      case "ArrowDown":
-        targetIndex = currentIndex + 2;
-        break;
-
-      default:
-        return;
+    if (event.key === "ArrowLeft") {
+      targetIndex = currentIndex - 1;
+    } else if (event.key === "ArrowRight") {
+      targetIndex = currentIndex + 1;
+    } else if (event.key === "ArrowUp") {
+      targetIndex = currentIndex - 2;
+    } else if (event.key === "ArrowDown") {
+      targetIndex = currentIndex + 2;
     }
 
-    if (targetIndex < 0 || targetIndex >= inputs.length) {
+    if (
+      targetIndex < 0 ||
+      targetIndex >= inputs.length ||
+      !inputs[targetIndex]
+    ) {
       return;
     }
 
@@ -958,47 +955,80 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
     <div
       style={{
         background: C.panel,
-        border: `1px solid ${C.line}`,
-        borderRadius: 12,
-        padding: 14,
+        border: `1px solid ${C.amber}`,
+        borderRadius: 16,
+        padding: "22px 26px 24px",
+        boxShadow: "0 2px 8px rgba(0,0,0,.10)",
       }}
     >
+      {/* HEADER KARTU */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: 12,
+          gap: 12,
+          marginBottom: 18,
         }}
       >
         <div
           style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontSize: 18,
+            fontSize: 22,
             fontWeight: 700,
             color: C.text,
+            lineHeight: 1.1,
           }}
         >
           {metric.name}
+          <span
+            style={{
+              color: C.muted,
+              fontSize: 17,
+              fontWeight: 500,
+              marginLeft: 7,
+            }}
+          >
+            • CT {Number(metric.ct || 0).toFixed(2)}s
+          </span>
+        </div>
+
+        <div
+          className="num-field"
+          style={{
+            color: C.steel,
+            fontSize: 18,
+            fontWeight: 700,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {actualCt !== null ? `${actualCt.toFixed(3)} min/pcs` : "—"}
         </div>
       </div>
 
+      {/* INPUT + STD PCS */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-          gap: 10,
+          gridTemplateColumns: "1fr 1fr 0.65fr",
+          gap: 18,
+          alignItems: "end",
         }}
       >
-
         {/* PCS */}
-        <div style={{ minWidth: 0 }}>
-          <label style={{ display: "block", fontSize: 10.5, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
-            PCS
+        <div>
+          <label
+            style={{
+              display: "block",
+              color: C.muted,
+              fontSize: 14,
+              marginBottom: 8,
+            }}
+          >
+            ACT Pcs (Total)
           </label>
 
           <input
-            className="num-field num-field-input" style={{ width: "100%", background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "10px 12px", color: C.text, outline: "none", fontSize: 14 }}
+            className="num-field num-field-input"
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
@@ -1013,17 +1043,36 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
               )
             }
             onKeyDown={handleArrowNavigation}
+            style={{
+              width: "100%",
+              height: 66,
+              background: C.panel2,
+              border: `1px solid ${C.line}`,
+              borderRadius: 12,
+              padding: "0 16px",
+              color: C.text,
+              fontSize: 23,
+              fontWeight: 600,
+              outline: "none",
+            }}
           />
         </div>
 
         {/* MENIT */}
-        <div style={{ minWidth: 0 }}>
-          <label style={{ display: "block", fontSize: 10.5, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
-            Menit
+        <div>
+          <label
+            style={{
+              display: "block",
+              color: C.muted,
+              fontSize: 14,
+              marginBottom: 8,
+            }}
+          >
+            ACT Min (Menit)
           </label>
 
           <input
-            className="num-field num-field-input" style={{ width: "100%", background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "10px 12px", color: C.text, outline: "none", fontSize: 14 }}
+            className="num-field num-field-input"
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
@@ -1038,33 +1087,50 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
               )
             }
             onKeyDown={handleArrowNavigation}
+            style={{
+              width: "100%",
+              height: 66,
+              background: C.panel2,
+              border: `1px solid ${C.line}`,
+              borderRadius: 12,
+              padding: "0 16px",
+              color: C.text,
+              fontSize: 23,
+              fontWeight: 600,
+              outline: "none",
+            }}
           />
         </div>
 
         {/* STD PCS */}
-        <div style={{ minWidth: 0 }}>
-          <label style={{ display: "block", fontSize: 10.5, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
-            STD PCS
+        <div>
+          <label
+            style={{
+              display: "block",
+              color: C.muted,
+              fontSize: 14,
+              marginBottom: 8,
+            }}
+          >
+            STD Pcs
           </label>
 
-          <div className="num-field" style={{ background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "10px 12px", color: C.text, minHeight: 40, display: "flex", alignItems: "center" }}>
+          <div
+            className="num-field"
+            style={{
+              height: 66,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              color: metric.qs ? C.text : C.muted,
+              fontSize: 23,
+              fontWeight: 700,
+              padding: "0 8px",
+            }}
+          >
             {metric.qs || "—"}
           </div>
         </div>
-
-        {/* ACTUAL CT */}
-        <div style={{ minWidth: 0 }}>
-          <label style={{ display: "block", fontSize: 10.5, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
-            Actual CT
-          </label>
-
-          <div className="num-field" style={{ background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "10px 12px", color: C.text, minHeight: 40, display: "flex", alignItems: "center" }}>
-            {actualCt !== null
-              ? actualCt.toFixed(2)
-              : "-"}
-          </div>
-        </div>
-
       </div>
     </div>
   );
