@@ -898,95 +898,164 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, updateNote, c
 
 /* ---------------------------------- metric card --------------------------------- */
 function MetricCard({ sheetId, date, metric, updateEntry }) {
-  const pcsInputRef = useRef(null);
-  const menitInputRef = useRef(null);
-
   const actualCt =
     Number(metric.pcs) > 0
       ? Number(metric.menit || 0) / Number(metric.pcs)
       : null;
-  
+
   const handleArrowNavigation = (event) => {
-  if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
-    return;
-  }
+    const navigationKeys = [
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+    ];
 
-  const current = event.currentTarget;
+    if (!navigationKeys.includes(event.key)) {
+      return;
+    }
 
-  let target = null;
+    // Ambil semua input PCS dan Menit yang ada di halaman Input
+    const inputs = Array.from(
+      document.querySelectorAll(".num-field-input")
+    );
 
-  if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-    target = menitInputRef.current;
-  }
+    const currentInput = event.currentTarget;
+    const currentIndex = inputs.indexOf(currentInput);
 
-  if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-    target = pcsInputRef.current;
-  }
+    if (currentIndex === -1) {
+      return;
+    }
 
-  if (target && target !== current) {
-    event.preventDefault();
-    target.focus();
-    target.select();
-  }
-};
+    let targetIndex = currentIndex;
+
+    // ← satu kolom ke kiri
+    if (event.key === "ArrowLeft") {
+      targetIndex = currentIndex - 1;
+    }
+
+    // → satu kolom ke kanan
+    if (event.key === "ArrowRight") {
+      targetIndex = currentIndex + 1;
+    }
+
+    // ↑ satu MetricCard ke atas
+    if (event.key === "ArrowUp") {
+      targetIndex = currentIndex - 2;
+    }
+
+    // ↓ satu MetricCard ke bawah
+    if (event.key === "ArrowDown") {
+      targetIndex = currentIndex + 2;
+    }
+
+    // Pastikan target masih berada dalam daftar input
+    if (
+      targetIndex >= 0 &&
+      targetIndex < inputs.length &&
+      inputs[targetIndex]
+    ) {
+      event.preventDefault();
+
+      const target = inputs[targetIndex];
+
+      target.focus();
+      target.select();
+    }
+  };
 
   return (
-    <div style={{ background: C.panel, border: `1px solid ${C.amber}`, borderRadius: 12, padding: 14 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <span style={{ fontWeight: 600, fontSize: 14.5 }}>{metric.name} <span style={{ color: C.muted, fontSize: 12, fontWeight: 400 }}>• CT {metric.ct}s</span></span>
-      {actualCt !== null && (
-    <span
-        style={{
-            fontSize: 13,
-            fontWeight: 600,
-            color: C.steel,
-            fontFamily: "'IBM Plex Mono', monospace",
-        }}
-    >
-        {actualCt.toFixed(3)} min/pcs
-    </span>
-)}
+    <div className="metric-card">
+      <div className="metric-card-header">
+        <div>
+          <div className="metric-title">
+            {metric.label}
+          </div>
+
+          {metric.description && (
+            <div className="metric-description">
+              {metric.description}
+            </div>
+          )}
+        </div>
       </div>
-      <div style={{ display: "flex", gap: 10 }}>
-        {/* Kolom PCS (Kiri) */}
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>ACT Pcs (Total)</div>
+
+      <div className="metric-grid">
+
+        {/* PCS */}
+        <div className="metric-column">
+          <label className="metric-label">
+            PCS
+          </label>
+
           <input
-            ref={pcsInputRef}
             className="num-field num-field-input"
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
             value={metric.pcs}
-            onChange={(e) => updateEntry(sheetId, date, metric.id, "pcs", e.target.value)}
+            onChange={(e) =>
+              updateEntry(
+                sheetId,
+                date,
+                metric.id,
+                "pcs",
+                e.target.value
+              )
+            }
             onKeyDown={handleArrowNavigation}
-            style={{ width: "100%", background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 10px", color: C.text, fontSize: 14, outline: "none", transition: "all 0.15s ease" }}
           />
         </div>
 
-        {/* Kolom Menit (Tengah) */}
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>ACT Min (Menit)</div>
-         <input
-            ref={menitInputRef}
+        {/* MENIT */}
+        <div className="metric-column">
+          <label className="metric-label">
+            Menit
+          </label>
+
+          <input
             className="num-field num-field-input"
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
             value={metric.menit}
-            onChange={(e) => updateEntry(sheetId, date, metric.id, "menit", e.target.value)}
+            onChange={(e) =>
+              updateEntry(
+                sheetId,
+                date,
+                metric.id,
+                "menit",
+                e.target.value
+              )
+            }
             onKeyDown={handleArrowNavigation}
-            style={{ width: "100%", background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 10px", color: C.text, fontSize: 14, outline: "none", transition: "all 0.15s ease" }}
           />
         </div>
 
-        {/* Kolom STD Pcs (Kanan) */}
-        <div style={{ width: 70, textAlign: "right" }}>
-          <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>STD Pcs</div>
-          <div className="num-field" style={{ padding: "8px 0", fontSize: 14, fontWeight: 600, color: metric.pct !== null ? C.text : C.muted }}>
-            {metric.qs || "—"}
+        {/* STD PCS */}
+        <div className="metric-column">
+          <label className="metric-label">
+            STD PCS
+          </label>
+
+          <div className="num-field num-field-readonly">
+            {metric.stdPcs ?? "-"}
           </div>
         </div>
+
+        {/* ACTUAL CT */}
+        <div className="metric-column">
+          <label className="metric-label">
+            Actual CT
+          </label>
+
+          <div className="num-field num-field-readonly">
+            {actualCt !== null
+              ? actualCt.toFixed(2)
+              : "-"}
+          </div>
+        </div>
+
       </div>
     </div>
   );
