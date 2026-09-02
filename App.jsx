@@ -897,6 +897,7 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, updateNote, c
 }
 
 /* ---------------------------------- metric card --------------------------------- */
+/* ---------------------------------- metric card --------------------------------- */
 function MetricCard({ sheetId, date, metric, updateEntry }) {
   const actualCt =
     Number(metric.pcs) > 0
@@ -915,7 +916,23 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
       return;
     }
 
-    // Ambil semua input PCS dan Menit yang ada di halaman Input
+    /*
+     * Semua input PCS dan Menit disusun seperti tabel:
+     *
+     * PCS 1     Menit 1
+     * PCS 2     Menit 2
+     * PCS 3     Menit 3
+     * PCS 4     Menit 4
+     *
+     * Urutan DOM:
+     * [0] PCS 1
+     * [1] Menit 1
+     * [2] PCS 2
+     * [3] Menit 2
+     * [4] PCS 3
+     * [5] Menit 3
+     */
+
     const inputs = Array.from(
       document.querySelectorAll(".num-field-input")
     );
@@ -929,31 +946,30 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
 
     let targetIndex = currentIndex;
 
-    // ← satu kolom ke kiri
+    // ← ke input sebelah kiri
     if (event.key === "ArrowLeft") {
       targetIndex = currentIndex - 1;
     }
 
-    // → satu kolom ke kanan
+    // → ke input sebelah kanan
     if (event.key === "ArrowRight") {
       targetIndex = currentIndex + 1;
     }
 
-    // ↑ satu MetricCard ke atas
+    // ↑ ke MetricCard sebelumnya, kolom yang sama
     if (event.key === "ArrowUp") {
       targetIndex = currentIndex - 2;
     }
 
-    // ↓ satu MetricCard ke bawah
+    // ↓ ke MetricCard berikutnya, kolom yang sama
     if (event.key === "ArrowDown") {
       targetIndex = currentIndex + 2;
     }
 
-    // Pastikan target masih berada dalam daftar input
+    // Cek apakah target tersedia
     if (
       targetIndex >= 0 &&
-      targetIndex < inputs.length &&
-      inputs[targetIndex]
+      targetIndex < inputs.length
     ) {
       event.preventDefault();
 
@@ -965,28 +981,75 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
   };
 
   return (
-    <div className="metric-card">
-      <div className="metric-card-header">
-        <div>
-          <div className="metric-title">
-            {metric.label}
-          </div>
+    <div
+      style={{
+        background: C.panel,
+        border: `1px solid ${C.amber}`,
+        borderRadius: 12,
+        padding: 14,
+      }}
+    >
+      {/* HEADER METRIC */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 10,
+        }}
+      >
+        <span
+          style={{
+            fontWeight: 600,
+            fontSize: 14.5,
+          }}
+        >
+          {metric.name}
 
-          {metric.description && (
-            <div className="metric-description">
-              {metric.description}
-            </div>
-          )}
-        </div>
+          <span
+            style={{
+              color: C.muted,
+              fontSize: 12,
+              fontWeight: 400,
+            }}
+          >
+            {" "}
+            • CT {metric.ct}s
+          </span>
+        </span>
+
+        {actualCt !== null && (
+          <span
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: C.steel,
+              fontFamily: "'IBM Plex Mono', monospace",
+            }}
+          >
+            {actualCt.toFixed(3)} min/pcs
+          </span>
+        )}
       </div>
 
-      <div className="metric-grid">
-
-        {/* PCS */}
-        <div className="metric-column">
-          <label className="metric-label">
-            PCS
-          </label>
+      {/* DATA INPUT */}
+      <div
+        style={{
+          display: "flex",
+          gap: 10,
+        }}
+      >
+        {/* ================= PCS ================= */}
+        <div style={{ flex: 1 }}>
+          <div
+            style={{
+              fontSize: 11,
+              color: C.muted,
+              marginBottom: 4,
+            }}
+          >
+            ACT Pcs (Total)
+          </div>
 
           <input
             className="num-field num-field-input"
@@ -1004,14 +1067,31 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
               )
             }
             onKeyDown={handleArrowNavigation}
+            style={{
+              width: "100%",
+              background: C.panel2,
+              border: `1px solid ${C.line}`,
+              borderRadius: 8,
+              padding: "8px 10px",
+              color: C.text,
+              fontSize: 14,
+              outline: "none",
+              transition: "all 0.15s ease",
+            }}
           />
         </div>
 
-        {/* MENIT */}
-        <div className="metric-column">
-          <label className="metric-label">
-            Menit
-          </label>
+        {/* ================= MENIT ================= */}
+        <div style={{ flex: 1 }}>
+          <div
+            style={{
+              fontSize: 11,
+              color: C.muted,
+              marginBottom: 4,
+            }}
+          >
+            ACT Min (Menit)
+          </div>
 
           <input
             className="num-field num-field-input"
@@ -1029,57 +1109,56 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
               )
             }
             onKeyDown={handleArrowNavigation}
+            style={{
+              width: "100%",
+              background: C.panel2,
+              border: `1px solid ${C.line}`,
+              borderRadius: 8,
+              padding: "8px 10px",
+              color: C.text,
+              fontSize: 14,
+              outline: "none",
+              transition: "all 0.15s ease",
+            }}
           />
         </div>
 
-        {/* STD PCS */}
-        <div className="metric-column">
-          <label className="metric-label">
-            STD PCS
-          </label>
+        {/* ================= STD PCS ================= */}
+        <div
+          style={{
+            width: 70,
+            textAlign: "right",
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              color: C.muted,
+              marginBottom: 4,
+            }}
+          >
+            STD Pcs
+          </div>
 
-          <div className="num-field num-field-readonly">
-            {metric.stdPcs ?? "-"}
+          <div
+            className="num-field"
+            style={{
+              padding: "8px 0",
+              fontSize: 14,
+              fontWeight: 600,
+              color:
+                metric.pct !== null
+                  ? C.text
+                  : C.muted,
+            }}
+          >
+            {metric.qs || "—"}
           </div>
         </div>
-
-        {/* ACTUAL CT */}
-        <div className="metric-column">
-          <label className="metric-label">
-            Actual CT
-          </label>
-
-          <div className="num-field num-field-readonly">
-            {actualCt !== null
-              ? actualCt.toFixed(2)
-              : "-"}
-          </div>
-        </div>
-
       </div>
     </div>
   );
 }
-
-/* Styles internal untuk mencegah error scope global */
-const inputIconBtnStyle = {
-  background: C.amber,
-  border: "none",
-  borderRadius: 10,
-  width: 44,
-  height: 44,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  color: "#1A1D20",
-  cursor: "pointer",
-  fontWeight: 700,
-  transition: "all .2s ease",
-  boxShadow: "0 3px 10px rgba(242,169,59,.30)"
-};
-const inputSummaryCardStyle = { flex: 1, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px" };
-const inputSummaryLabelStyle = { fontSize: 10.5, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6 };
-
 /* --------------------------------- settings view -------------------------------- */
 function SettingsView({ sheets, addSheet, removeSheet, updateSheetName, addMetric, updateMetric, removeMetric, moveSheet }) {
   const [newSheetName, setNewSheetName] = useState("");
