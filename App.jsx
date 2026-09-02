@@ -897,7 +897,6 @@ function InputView({ sheet, date, setDate, monthData, updateEntry, updateNote, c
 }
 
 /* ---------------------------------- metric card --------------------------------- */
-/* ---------------------------------- metric card --------------------------------- */
 function MetricCard({ sheetId, date, metric, updateEntry }) {
   const actualCt =
     Number(metric.pcs) > 0
@@ -905,34 +904,12 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
       : null;
 
   const handleArrowNavigation = (event) => {
-    const navigationKeys = [
-      "ArrowUp",
-      "ArrowDown",
-      "ArrowLeft",
-      "ArrowRight",
-    ];
+    const navigationKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
 
-    if (!navigationKeys.includes(event.key)) {
-      return;
-    }
+    if (!navigationKeys.includes(event.key)) return;
 
-    /*
-     * Semua input PCS dan Menit disusun seperti tabel:
-     *
-     * PCS 1     Menit 1
-     * PCS 2     Menit 2
-     * PCS 3     Menit 3
-     * PCS 4     Menit 4
-     *
-     * Urutan DOM:
-     * [0] PCS 1
-     * [1] Menit 1
-     * [2] PCS 2
-     * [3] Menit 2
-     * [4] PCS 3
-     * [5] Menit 3
-     */
-
+    // Urutan input di halaman:
+    // PCS 1 → Menit 1 → PCS 2 → Menit 2 → PCS 3 → Menit 3 → ...
     const inputs = Array.from(
       document.querySelectorAll(".num-field-input")
     );
@@ -940,119 +917,88 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
     const currentInput = event.currentTarget;
     const currentIndex = inputs.indexOf(currentInput);
 
-    if (currentIndex === -1) {
+    if (currentIndex === -1) return;
+
+    let targetIndex;
+
+    switch (event.key) {
+      case "ArrowLeft":
+        targetIndex = currentIndex - 1;
+        break;
+
+      case "ArrowRight":
+        targetIndex = currentIndex + 1;
+        break;
+
+      // Lompat 2 input agar tetap berada di kolom yang sama.
+      case "ArrowUp":
+        targetIndex = currentIndex - 2;
+        break;
+
+      case "ArrowDown":
+        targetIndex = currentIndex + 2;
+        break;
+
+      default:
+        return;
+    }
+
+    if (targetIndex < 0 || targetIndex >= inputs.length) {
       return;
     }
 
-    let targetIndex = currentIndex;
+    event.preventDefault();
 
-    // ← ke input sebelah kiri
-    if (event.key === "ArrowLeft") {
-      targetIndex = currentIndex - 1;
-    }
-
-    // → ke input sebelah kanan
-    if (event.key === "ArrowRight") {
-      targetIndex = currentIndex + 1;
-    }
-
-    // ↑ ke MetricCard sebelumnya, kolom yang sama
-    if (event.key === "ArrowUp") {
-      targetIndex = currentIndex - 2;
-    }
-
-    // ↓ ke MetricCard berikutnya, kolom yang sama
-    if (event.key === "ArrowDown") {
-      targetIndex = currentIndex + 2;
-    }
-
-    // Cek apakah target tersedia
-    if (
-      targetIndex >= 0 &&
-      targetIndex < inputs.length
-    ) {
-      event.preventDefault();
-
-      const target = inputs[targetIndex];
-
-      target.focus();
-      target.select();
-    }
+    const target = inputs[targetIndex];
+    target.focus();
+    target.select();
   };
 
   return (
     <div
       style={{
         background: C.panel,
-        border: `1px solid ${C.amber}`,
+        border: `1px solid ${C.line}`,
         borderRadius: 12,
         padding: 14,
       }}
     >
-      {/* HEADER METRIC */}
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: 10,
+          justifyContent: "space-between",
+          marginBottom: 12,
         }}
       >
-        <span
+        <div
           style={{
-            fontWeight: 600,
-            fontSize: 14.5,
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 18,
+            fontWeight: 700,
+            color: C.text,
           }}
         >
           {metric.name}
-
-          <span
-            style={{
-              color: C.muted,
-              fontSize: 12,
-              fontWeight: 400,
-            }}
-          >
-            {" "}
-            • CT {metric.ct}s
-          </span>
-        </span>
-
-        {actualCt !== null && (
-          <span
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: C.steel,
-              fontFamily: "'IBM Plex Mono', monospace",
-            }}
-          >
-            {actualCt.toFixed(3)} min/pcs
-          </span>
-        )}
+        </div>
       </div>
 
-      {/* DATA INPUT */}
       <div
         style={{
-          display: "flex",
+          display: "grid",
+          gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
           gap: 10,
         }}
       >
-        {/* ================= PCS ================= */}
-        <div style={{ flex: 1 }}>
-          <div
-            style={{
-              fontSize: 11,
-              color: C.muted,
-              marginBottom: 4,
-            }}
-          >
-            ACT Pcs (Total)
-          </div>
+
+        {/* PCS */}
+        <div style={{ minWidth: 0 }}>
+          <label style={{ display: "block", fontSize: 10.5, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+            PCS
+          </label>
 
           <input
-            className="num-field num-field-input"
+            className="num-field num-field-input" style={{ width: "100%", background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "10px 12px", color: C.text, outline: "none", fontSize: 14 }}
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
@@ -1067,34 +1013,17 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
               )
             }
             onKeyDown={handleArrowNavigation}
-            style={{
-              width: "100%",
-              background: C.panel2,
-              border: `1px solid ${C.line}`,
-              borderRadius: 8,
-              padding: "8px 10px",
-              color: C.text,
-              fontSize: 14,
-              outline: "none",
-              transition: "all 0.15s ease",
-            }}
           />
         </div>
 
-        {/* ================= MENIT ================= */}
-        <div style={{ flex: 1 }}>
-          <div
-            style={{
-              fontSize: 11,
-              color: C.muted,
-              marginBottom: 4,
-            }}
-          >
-            ACT Min (Menit)
-          </div>
+        {/* MENIT */}
+        <div style={{ minWidth: 0 }}>
+          <label style={{ display: "block", fontSize: 10.5, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+            Menit
+          </label>
 
           <input
-            className="num-field num-field-input"
+            className="num-field num-field-input" style={{ width: "100%", background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "10px 12px", color: C.text, outline: "none", fontSize: 14 }}
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
@@ -1109,56 +1038,57 @@ function MetricCard({ sheetId, date, metric, updateEntry }) {
               )
             }
             onKeyDown={handleArrowNavigation}
-            style={{
-              width: "100%",
-              background: C.panel2,
-              border: `1px solid ${C.line}`,
-              borderRadius: 8,
-              padding: "8px 10px",
-              color: C.text,
-              fontSize: 14,
-              outline: "none",
-              transition: "all 0.15s ease",
-            }}
           />
         </div>
 
-        {/* ================= STD PCS ================= */}
-        <div
-          style={{
-            width: 70,
-            textAlign: "right",
-          }}
-        >
-          <div
-            style={{
-              fontSize: 11,
-              color: C.muted,
-              marginBottom: 4,
-            }}
-          >
-            STD Pcs
-          </div>
+        {/* STD PCS */}
+        <div style={{ minWidth: 0 }}>
+          <label style={{ display: "block", fontSize: 10.5, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+            STD PCS
+          </label>
 
-          <div
-            className="num-field"
-            style={{
-              padding: "8px 0",
-              fontSize: 14,
-              fontWeight: 600,
-              color:
-                metric.pct !== null
-                  ? C.text
-                  : C.muted,
-            }}
-          >
+          <div className="num-field" style={{ background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "10px 12px", color: C.text, minHeight: 40, display: "flex", alignItems: "center" }}>
             {metric.qs || "—"}
           </div>
         </div>
+
+        {/* ACTUAL CT */}
+        <div style={{ minWidth: 0 }}>
+          <label style={{ display: "block", fontSize: 10.5, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+            Actual CT
+          </label>
+
+          <div className="num-field" style={{ background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, padding: "10px 12px", color: C.text, minHeight: 40, display: "flex", alignItems: "center" }}>
+            {actualCt !== null
+              ? actualCt.toFixed(2)
+              : "-"}
+          </div>
+        </div>
+
       </div>
     </div>
   );
 }
+
+/* Styles internal untuk mencegah error scope global */
+const inputIconBtnStyle = {
+  background: C.amber,
+  border: "none",
+  borderRadius: 10,
+  width: 44,
+  height: 44,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "#1A1D20",
+  cursor: "pointer",
+  fontWeight: 700,
+  transition: "all .2s ease",
+  boxShadow: "0 3px 10px rgba(242,169,59,.30)"
+};
+const inputSummaryCardStyle = { flex: 1, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px" };
+const inputSummaryLabelStyle = { fontSize: 10.5, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6 };
+
 /* --------------------------------- settings view -------------------------------- */
 function SettingsView({ sheets, addSheet, removeSheet, updateSheetName, addMetric, updateMetric, removeMetric, moveSheet }) {
   const [newSheetName, setNewSheetName] = useState("");
