@@ -90,21 +90,119 @@ const JSONBIN_BIN_ID = "6a45ea43da38895dfe201020";
 const JSONBIN_ACCESS_KEY = "$2a$10$1tOHMs3rSfnEVLSA9DvzD.nks0s1wKhEXxkoNevO4CvViNr8j4Z7W";
 const JSONBIN_BASE = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
 
-async function fetchDb() {
-  const res = await fetch(`${JSONBIN_BASE}/latest`, {
-    headers: { "X-Access-Key": JSONBIN_ACCESS_KEY },
-  });
-  if (!res.ok) throw new Error(`JSONBin GET failed: ${res.status}`);
-  const json = await res.json();
-  return json.record || null;
+class JsonBinError extends Error {
+  constructor(type, status = null, message = "") {
+    super(message);
+    this.name = "JsonBinError";
+    this.type = type;
+    this.status = status;
+  }
 }
+
+function getJsonBinError(status, method = "GET") {
+  if (status === 401) {
+    return new JsonBinError(
+      "ACCESS_KEY_INVALID",
+      status,
+      `${method} JSONBin gagal: Access Key tidak valid.`
+    );
+  }
+
+  if (status === 403) {
+    return new JsonBinError(
+      "ACCESS_DENIED",
+      status,
+      `${method} JSONBin gagal: akses ke Bin ditolak.`
+    );
+  }
+
+  if (status === 404) {
+    return new JsonBinError(
+      "BIN_NOT_FOUND",
+      status,
+      `${method} JSONBin gagal: Bin tidak ditemukan.`
+    );
+  }
+
+  if (status === 429) {
+    return new JsonBinError(
+      "RATE_LIMIT",
+      status,
+      `${method} JSONBin gagal: terlalu banyak permintaan.`
+    );
+  }
+
+  if ([500, 502, 503, 504].includes(status)) {
+    return new JsonBinError(
+      "SERVER_ERROR",
+      status,
+      `${method} JSONBin gagal: server JSONBin sedang bermasalah.`
+    );
+  }
+
+  return new JsonBinError(
+    "UNKNOWN_HTTP_ERROR",
+    status,
+    `${method} JSONBin gagal dengan HTTP ${status}.`
+  );
+}
+
+async function fetchDb() {
+  let res;
+
+  try {
+    res = await fetch(`${JSONBIN_BASE}/latest`, {
+      headers: {
+        "X-Access-Key": JSONBIN_ACCESS_KEY,
+      },
+    });
+  } catch (error) {
+    throw new JsonBinError(
+      "NETWORK_ERROR",
+      null,
+      "Tidak dapat terhubung ke server JSONBin."
+    );
+  }
+
+  if (!res.ok) {
+    throw getJsonBinError(res.status, "GET");
+  }
+
+  try {
+    const json = await res.json();
+    return json.record || null;
+  } catch (error) {
+    throw new JsonBinError(
+      "INVALID_RESPONSE",
+      null,
+      "JSONBin memberikan respons yang tidak valid."
+    );
+  }
+}
+
 async function saveDb(db) {
-  const res = await fetch(JSONBIN_BASE, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", "X-Access-Key": JSONBIN_ACCESS_KEY },
-    body: JSON.stringify(db),
-  });
-  if (!res.ok) throw new Error(`JSONBin PUT failed: ${res.status}`);
+  let res;
+
+  try {
+    res = await fetch(JSONBIN_BASE, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Access-Key": JSONBIN_ACCESS_KEY,
+      },
+      body: JSON.stringify(db),
+    });
+  } catch (error) {
+    throw new JsonBinError(
+      "NETWORK_ERROR",
+      null,
+      "Tidak dapat terhubung ke server JSONBin."
+    );
+  }
+
+  if (!res.ok) {
+    throw getJsonBinError(res.status, "PUT");
+  }
 }
 
 /* ----------------------------------- App ------------------------------------- */
