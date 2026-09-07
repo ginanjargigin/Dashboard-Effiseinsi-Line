@@ -86,9 +86,9 @@ const DEFAULT_SHEETS = [
 ];
 
 /* --------------------------------- storage (JSONBin.io) ----------------------------------- */
-const JSONBIN_BIN_ID = "6a45ea43da38895dfe201020";
-const JSONBIN_ACCESS_KEY = "$2a$10$1tOHMs3rSfnEVLSA9DvzD.nks0s1wKhEXxkoNevO4CvViNr8j4Z7W";
-const JSONBIN_BASE = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+/* --------------------------------- storage (JSONBin.io) ----------------------------------- */
+
+const JSONBIN_BASE = "/api/jsonbin";
 
 class JsonBinError extends Error {
   constructor(type, status = null, message = "") {
@@ -151,16 +151,12 @@ async function fetchDb() {
   let res;
 
   try {
-    res = await fetch(`${JSONBIN_BASE}/latest`, {
-      headers: {
-        "X-Access-Key": JSONBIN_ACCESS_KEY,
-      },
-    });
+    res = await fetch(JSONBIN_BASE);
   } catch (error) {
     throw new JsonBinError(
       "NETWORK_ERROR",
       null,
-      "Tidak dapat terhubung ke server JSONBin."
+      "Tidak dapat terhubung ke server."
     );
   }
 
@@ -175,7 +171,7 @@ async function fetchDb() {
     throw new JsonBinError(
       "INVALID_RESPONSE",
       null,
-      "JSONBin memberikan respons yang tidak valid."
+      "Server memberikan respons yang tidak valid."
     );
   }
 }
@@ -188,7 +184,6 @@ async function saveDb(db) {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "X-Access-Key": JSONBIN_ACCESS_KEY,
       },
       body: JSON.stringify(db),
     });
@@ -196,7 +191,7 @@ async function saveDb(db) {
     throw new JsonBinError(
       "NETWORK_ERROR",
       null,
-      "Tidak dapat terhubung ke server JSONBin."
+      "Tidak dapat terhubung ke server."
     );
   }
 
