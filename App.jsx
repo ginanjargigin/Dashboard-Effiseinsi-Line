@@ -571,6 +571,36 @@ button:active{
     `}</style>
   );
 }
+const inputIconBtnStyle = {
+  background: C.amber,
+  border: "none",
+  borderRadius: 10,
+  width: 44,
+  height: 44,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "#1A1D20",
+  cursor: "pointer",
+  fontWeight: 700,
+  transition: "all .2s ease",
+  boxShadow: "0 3px 10px rgba(242,169,59,.30)"
+};
+
+const inputSummaryCardStyle = {
+  flex: 1,
+  background: C.panel,
+  border: `1px solid ${C.line}`,
+  borderRadius: 10,
+  padding: "10px 14px"
+};
+
+const inputSummaryLabelStyle = {
+  fontSize: 10.5,
+  color: C.muted,
+  textTransform: "uppercase",
+  letterSpacing: 0.6
+};
 
 /* ---------------------------------- top bar ----------------------------------- */
 function TopBar({ view, setView, saveState }) {
