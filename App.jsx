@@ -657,9 +657,11 @@ function GlobalStyle() {
 button:active{
     transform:scale(.96);
 }
+/* Scrollbar global */
 ::-webkit-scrollbar {
   height: 6px;
   width: 6px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-track {
@@ -670,12 +672,21 @@ button:active{
   background: ${C.line};
   border-radius: 6px;
 }
+
+
+/* =========================================
+   SCROLLBAR KHUSUS KATEGORI / SHEET TABS
+   ========================================= */
+
 .sheet-tabs-scroll {
   scrollbar-width: thin;
+  scrollbar-color: ${C.line} transparent;
 }
 
+/* Chrome / Edge / Safari */
 .sheet-tabs-scroll::-webkit-scrollbar {
   height: 6px;
+  background: transparent;
 }
 
 .sheet-tabs-scroll::-webkit-scrollbar-track {
@@ -685,20 +696,28 @@ button:active{
 .sheet-tabs-scroll::-webkit-scrollbar-thumb {
   background: ${C.line};
   border-radius: 6px;
-  transition: background 0.2s ease;
 }
 
-/* Pointer masuk ke area kategori */
+/* Saat pointer masuk ke area kategori */
+.sheet-tabs-scroll:hover {
+  scrollbar-width: auto;
+  scrollbar-color: #777 transparent;
+}
+
 .sheet-tabs-scroll:hover::-webkit-scrollbar {
-  height: 14px;
+  height: 12px;
 }
 
-/* Thumb menjadi lebih jelas */
+.sheet-tabs-scroll:hover::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .sheet-tabs-scroll:hover::-webkit-scrollbar-thumb {
   background: #777;
+  border-radius: 8px;
 }
 
-/* Pointer tepat di atas scrollbar */
+/* Saat pointer tepat di atas scrollbar */
 .sheet-tabs-scroll::-webkit-scrollbar-thumb:hover {
   background: #aaa;
 }
