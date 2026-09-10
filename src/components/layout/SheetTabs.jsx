@@ -1,5 +1,5 @@
 /* --------------------------------- sheet tabs ---------------------------------- */
-function SheetTabs({ sheets, sheetId, setSheetId }) {
+export default function SheetTabs({ sheets, sheetId, setSheetId }) {
   return (
     <div
       className="no-print sheet-tabs-scroll"
