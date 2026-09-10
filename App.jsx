@@ -657,8 +657,36 @@ function GlobalStyle() {
 button:active{
     transform:scale(.96);
 }
-      ::-webkit-scrollbar { height: 6px; width: 6px; }
-      ::-webkit-scrollbar-thumb { background: ${C.line}; border-radius: 4px; }
+    /* Scrollbar normal */
+::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: ${C.line};
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+/* Saat pointer berada di elemen yang memiliki scrollbar */
+*:hover::-webkit-scrollbar {
+  height: 12px;
+  width: 12px;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background: #777;
+}
+
+/* Saat pointer tepat di atas thumb scrollbar */
+::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
       @media print {
         .no-print { display: none !important; }
         body, .print-area { background: #fff !important; color: #111 !important; }
