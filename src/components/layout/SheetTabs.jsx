@@ -1,4 +1,4 @@
-
+import { C } from "../../constants/appConstants";
 export default function SheetTabs({ sheets, sheetId, setSheetId }) {
 /* --------------------------------- sheet tabs ---------------------------------- */
 
