@@ -14,6 +14,7 @@ import React, {
 import { C } from "./src/constants/appConstants";
 import SheetTabs from "./src/components/layout/SheetTabs";
 import MetricCard from "./src/components/input/MetricCard";
+import TopBar from "./src/components/layout/TopBar";
 
 import {
   uid,
