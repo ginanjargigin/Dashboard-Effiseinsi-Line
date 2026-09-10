@@ -1,4 +1,5 @@
   /* ---------------------------------- metric card --------------------------------- */
+import { C } from "../../constants/appConstants";
 export default function MetricCard({ sheetId, date, metric, updateEntry }) {
   const actualCt =
     Number(metric.pcs) > 0
