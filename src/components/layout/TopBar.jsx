@@ -5,6 +5,14 @@ import {
 } from "lucide-react";
 
 export default function TopBar({ view, setView, saveState }) {
+  const items = [
+    { id: "input", label: "Input", icon: Keyboard },
+    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { id: "settings", label: "Pengaturan", icon: Settings },
+  ];
+
+ // lanjutkan isi TopBar yang sekarang
+
   /* ---------------------------------- top bar ----------------------------------- */
 function TopBar({ view, setView, saveState }) {
   const items = [
