@@ -657,7 +657,6 @@ function GlobalStyle() {
 button:active{
     transform:scale(.96);
 }
-    /* Scrollbar normal */
 ::-webkit-scrollbar {
   height: 6px;
   width: 6px;
@@ -670,21 +669,37 @@ button:active{
 ::-webkit-scrollbar-thumb {
   background: ${C.line};
   border-radius: 6px;
+}
+.sheet-tabs-scroll {
+  scrollbar-width: thin;
+}
+
+.sheet-tabs-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.sheet-tabs-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sheet-tabs-scroll::-webkit-scrollbar-thumb {
+  background: ${C.line};
+  border-radius: 6px;
   transition: background 0.2s ease;
 }
 
-/* Saat pointer berada di elemen yang memiliki scrollbar */
-*:hover::-webkit-scrollbar {
-  height: 12px;
-  width: 12px;
+/* Pointer masuk ke area kategori */
+.sheet-tabs-scroll:hover::-webkit-scrollbar {
+  height: 14px;
 }
 
-*:hover::-webkit-scrollbar-thumb {
+/* Thumb menjadi lebih jelas */
+.sheet-tabs-scroll:hover::-webkit-scrollbar-thumb {
   background: #777;
 }
 
-/* Saat pointer tepat di atas thumb scrollbar */
-::-webkit-scrollbar-thumb:hover {
+/* Pointer tepat di atas scrollbar */
+.sheet-tabs-scroll::-webkit-scrollbar-thumb:hover {
   background: #aaa;
 }
       @media print {
