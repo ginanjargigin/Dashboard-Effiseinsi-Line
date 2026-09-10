@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { C } from "./src/constants/appConstants";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell,
 } from "recharts";
@@ -8,19 +9,7 @@ import {
 } from "lucide-react";
 
 /* ---------------------------------- tokens ---------------------------------- */
-const C = {
-  bg: "#1A1D20",
-  panel: "#232729",
-  panel2: "#2B3033",
-  line: "#383E42",
-  amber: "#F2A93B",
-  steel: "#6C93B0",
-  text: "#ECEEEF",
-  muted: "#8C949A",
-  good: "#49B96B",
-  warn: "#F2A93B",
-  bad: "#E5555C",
-};
+
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 const pad2 = (n) => String(n).padStart(2, "0");
