@@ -13,37 +13,26 @@ import React, {
 
 import { C } from "./src/constants/appConstants";
 import SheetTabs from "./src/components/layout/SheetTabs";
-import MetricCard from "./src/components/input/MetricCard";
 import InputView from "./src/components/input/InputView";
 import SettingsView from "./src/components/settings/SettingsView";
-import StatCard from "./src/components/dashboard/StatCard";
 import TopBar from "./src/components/layout/TopBar";
 import DashboardView from "./src/components/dashboard/DashboardView";
 
 
 import {
   uid,
-  pad2,
   todayISO,
   monthKeyOf,
-  daysInMonth,
-  monthLabel,
   clampInt,
   qtyStd,
   pctAct,
-  statusColor,
 } from "./src/utils/appUtils";
 
 import { DEFAULT_SHEETS } from "./src/data/defaultSheets";
 
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell,
-} from "recharts";
-import {
-  Plus, Trash2, Settings, LayoutDashboard, Keyboard, Printer, CalendarCheck, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
-  Check, X, AlertTriangle, TrendingUp, TrendingDown, Calendar,FileSpreadsheet,
+  AlertTriangle,
 } from "lucide-react";
-
 
 
 
