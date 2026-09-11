@@ -8,7 +8,6 @@ import React, {
   useEffect,
   useRef,
   useCallback,
-  useMemo,
 } from "react";
 
 import { C } from "./src/constants/appConstants";
