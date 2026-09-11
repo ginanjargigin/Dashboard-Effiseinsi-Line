@@ -116,4 +116,384 @@ const exportDbCsv = () => {
   createCsvExport(db, todayISO());
 };
 
+    const monthData = (db && db.months[mk]) || {};
+
+  const updateEntry = (sId, d, metricId, field, raw) => {
+    const val = clampInt(raw);
+
+    setDb((prev) => {
+      const next = {
+        ...prev,
+        months: {
+          ...prev.months,
+        },
+      };
+
+      const monthObj = {
+        ...(next.months[mk] || {}),
+      };
+
+      monthObj[sId] = {
+        ...(monthObj[sId] || {}),
+      };
+
+      monthObj[sId][d] = {
+        ...(monthObj[sId][d] || {}),
+      };
+
+      monthObj[sId][d][metricId] = {
+        ...(monthObj[sId][d][metricId] || {}),
+        [field]: val,
+      };
+
+      next.months[mk] = monthObj;
+
+      scheduleSave(next);
+
+      return next;
+    });
+  };
+
+  const updateNote = (sId, d, note) => {
+    setDb((prev) => {
+      const next = {
+        ...prev,
+        months: {
+          ...prev.months,
+        },
+      };
+
+      const monthObj = {
+        ...(next.months[mk] || {}),
+      };
+
+      monthObj[sId] = {
+        ...(monthObj[sId] || {}),
+      };
+
+      const dayObj = {
+        ...(monthObj[sId][d] || {}),
+      };
+
+      const trimmedNote = String(note ?? "");
+
+      if (trimmedNote.trim() === "") {
+        delete dayObj.note;
+      } else {
+        dayObj.note = trimmedNote;
+      }
+
+      if (Object.keys(dayObj).length === 0) {
+        delete monthObj[sId][d];
+      } else {
+        monthObj[sId][d] = dayObj;
+      }
+
+      next.months[mk] = monthObj;
+
+      scheduleSave(next);
+
+      return next;
+    });
+  };
+
+  const clearEntry = (sId, d) => {
+    setDb((prev) => {
+      const next = {
+        ...prev,
+        months: {
+          ...prev.months,
+        },
+      };
+
+      const monthObj = {
+        ...(next.months[mk] || {}),
+      };
+
+      if (monthObj[sId]) {
+        monthObj[sId] = {
+          ...monthObj[sId],
+        };
+
+        delete monthObj[sId][d];
+      }
+
+      next.months[mk] = monthObj;
+
+      scheduleSave(next);
+
+      return next;
+    });
+  };
+
+  const addSheet = (name) => {
+    const s = {
+      id: uid(),
+      name,
+      metrics: [{ id: uid(), name: "Std", ct: 10 }],
+    };
+
+    setDb((prev) => {
+      const next = {
+        ...prev,
+        sheets: [...prev.sheets, s],
+      };
+
+      scheduleSave(next);
+
+      return next;
+    });
+
+    setSheetId(s.id);
+  };
+
+  const removeSheet = (sId) => {
+    setDb((prev) => {
+      const next = {
+        ...prev,
+        sheets: prev.sheets.filter((s) => s.id !== sId),
+      };
+
+      scheduleSave(next);
+
+      if (sheetId === sId && next.sheets.length) {
+        setSheetId(next.sheets[0].id);
+      }
+
+      return next;
+    });
+  };
+
+  const updateSheetName = (sId, name) => {
+    setDb((prev) => {
+      const next = {
+        ...prev,
+        sheets: prev.sheets.map((s) =>
+          s.id === sId ? { ...s, name } : s
+        ),
+      };
+
+      scheduleSave(next);
+
+      return next;
+    });
+  };
+
+  const addMetric = (sId) => {
+    setDb((prev) => {
+      const next = {
+        ...prev,
+        sheets: prev.sheets.map((s) =>
+          s.id === sId
+            ? {
+                ...s,
+                metrics: [
+                  ...s.metrics,
+                  {
+                    id: uid(),
+                    name: "Baru",
+                    ct: 10,
+                  },
+                ],
+              }
+            : s
+        ),
+      };
+
+      scheduleSave(next);
+
+      return next;
+    });
+  };
+
+  const updateMetric = (sId, mId, field, value) => {
+    setDb((prev) => {
+      const next = {
+        ...prev,
+        sheets: prev.sheets.map((s) => {
+          if (s.id !== sId) return s;
+
+          return {
+            ...s,
+            metrics: s.metrics.map((m) =>
+              m.id === mId
+                ? {
+                    ...m,
+                    [field]:
+                      field === "ct"
+                        ? Number(value) || 0
+                        : value,
+                  }
+                : m
+            ),
+          };
+        }),
+      };
+
+      scheduleSave(next);
+
+      return next;
+    });
+  };
+
+  const removeMetric = (sId, mId) => {
+    setDb((prev) => {
+      const next = {
+        ...prev,
+        sheets: prev.sheets.map((s) =>
+          s.id === sId
+            ? {
+                ...s,
+                metrics: s.metrics.filter(
+                  (m) => m.id !== mId
+                ),
+              }
+            : s
+        ),
+      };
+
+      scheduleSave(next);
+
+      return next;
+    });
+  };
+
+  const moveSheet = (sId, direction) => {
+    setDb((prev) => {
+      const arr = [...prev.sheets];
+      const idx = arr.findIndex((s) => s.id === sId);
+      const swapWith = idx + direction;
+
+      if (
+        idx === -1 ||
+        swapWith < 0 ||
+        swapWith >= arr.length
+      ) {
+        return prev;
+      }
+
+      [arr[idx], arr[swapWith]] = [
+        arr[swapWith],
+        arr[idx],
+      ];
+
+      const next = {
+        ...prev,
+        sheets: arr,
+      };
+
+      scheduleSave(next);
+
+      return next;
+    });
+  };
+
+  if (!ready || (!db && !loadError)) {
+    return (
+      <div
+        style={{
+          background: C.bg,
+          color: C.text,
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "Inter, sans-serif",
+        }}
+      >
+        Memuat papan efisiensi…
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div
+        style={{
+          background: C.bg,
+          color: C.text,
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "Inter, sans-serif",
+          padding: 24,
+          textAlign: "center",
+        }}
+      >
+        <AlertTriangle color={C.bad} size={28} />
+        <div>{loadError}</div>
+      </div>
+    );
+  }
+
+  const sheets = db.sheets;
+  const currentSheet =
+    sheets.find((s) => s.id === sheetId) || sheets[0];
+
+  return (
+    <div
+      style={{
+        background: C.bg,
+        minHeight: "100vh",
+        color: C.text,
+        fontFamily: "'Inter', sans-serif",
+        paddingBottom: 24,
+      }}
+    >
+      <GlobalStyle />
+
+      <TopBar
+        view={view}
+        setView={setView}
+        saveState={saveState}
+      />
+
+      <SheetTabs
+        sheets={sheets}
+        sheetId={sheetId}
+        setSheetId={setSheetId}
+      />
+
+      {view === "input" && (
+        <InputView
+          sheet={currentSheet}
+          date={date}
+          setDate={setDate}
+          monthData={monthData}
+          updateEntry={updateEntry}
+          updateNote={updateNote}
+          clearEntry={clearEntry}
+        />
+      )}
+
+      {view === "dashboard" && (
+        <DashboardView
+          sheets={sheets}
+          sheetId={sheetId}
+          setSheetId={setSheetId}
+          mk={mk}
+          setDate={setDate}
+          monthData={monthData}
+          exportDbCsv={exportDbCsv}
+        />
+      )}
+
+      {view === "settings" && (
+        <SettingsView
+          sheets={sheets}
+          addSheet={addSheet}
+          removeSheet={removeSheet}
+          updateSheetName={updateSheetName}
+          addMetric={addMetric}
+          updateMetric={updateMetric}
+          removeMetric={removeMetric}
+          moveSheet={moveSheet}
+        />
+      )}
+    </div>
+  );
+}
 
