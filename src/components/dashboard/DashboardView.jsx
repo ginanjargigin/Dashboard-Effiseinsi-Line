@@ -28,6 +28,7 @@ import {
   pctAct,
   statusColor,
 } from "../../utils/appUtils";
+import StatCard from "./StatCard";
 
 const dashTh = {
   padding: "9px 14px",
@@ -251,5 +252,3 @@ Cetak
   );
 }
 
-const dashTh = { padding: "9px 14px", fontSize: 11, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, fontWeight: 600 };
-const dashTd = { padding: "8px 14px" };
