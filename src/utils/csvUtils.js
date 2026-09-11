@@ -10,16 +10,15 @@ export function exportDbCsv(db, today) {
   const rows = [];
 
   rows.push([
-    "sheetId",
     "sheetName",
     "date",
-    "metricId",
     "metricName",
     "ct_s",
     "pcs",
     "menit",
     "std_pcs",
     "pct_act",
+    "note",
   ]);
 
   db.sheets.forEach((sheet) => {
@@ -33,6 +32,7 @@ export function exportDbCsv(db, today) {
           .sort()
           .forEach((dateKey) => {
             const day = sheetObj[dateKey] || {};
+            const note = day.note || "";
 
             sheet.metrics.forEach((m) => {
               const value = day[m.id] || {};
@@ -44,16 +44,15 @@ export function exportDbCsv(db, today) {
               const pct = pctAct(pcs, stdPcs);
 
               rows.push([
-                sheet.id,
                 sheet.name,
                 dateKey,
-                m.id,
                 m.name,
                 m.ct,
                 pcs,
                 menit,
                 stdPcs || "",
                 pct === null ? "" : pct.toFixed(2),
+                note,
               ]);
             });
           });
