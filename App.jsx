@@ -446,16 +446,17 @@ const clearEntry = (sId, d) => {
           clearEntry={clearEntry}
         />
       )}
-      {view === "dashboard" && (
-<
-  sheets={sheets}
-  sheetId={sheetId}
-  setSheetId={setSheetId}
-  mk={mk}
-  setDate={setDate}
-  monthData={monthData}
-  exportDbCsv={exportDbCsv}
-/>
+     {view === "dashboard" && (
+  <DashboardView
+    sheets={sheets}
+    sheetId={sheetId}
+    setSheetId={setSheetId}
+    mk={mk}
+    setDate={setDate}
+    monthData={monthData}
+    exportDbCsv={exportDbCsv}
+  />
+)}
       )}
       {view === "settings" && (
         <SettingsView
