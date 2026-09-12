@@ -4,8 +4,7 @@ import React, {
   useState,
   useEffect,
   useRef,
-  useCallback,
-} from "react";
+ } from "react";
 
 import { C } from "./src/constants/appConstants";
 import SheetTabs from "./src/components/layout/SheetTabs";
@@ -16,20 +15,15 @@ import DashboardView from "./src/components/dashboard/DashboardView";
 import GlobalStyle from "./src/components/layout/GlobalStyle";
 
 import {
-  uid,
   todayISO,
   monthKeyOf,
-  qtyStd,
-  pctAct,
-} from "./src/utils/appUtils";
+ } from "./src/utils/appUtils";
 
 import {
   updateEntryInDb,
   updateNoteInDb,
   clearEntryInDb,
 } from "./src/utils/monthDataUtils";
-
-import { DEFAULT_SHEETS } from "./src/data/defaultSheets";
 
 import {
   AlertTriangle,
