@@ -1,8 +1,5 @@
-import {
-  fetchDb,
-  saveDb,
-} from "./src/services/jsonbinService";
-
+import { saveDb } from "./src/services/jsonbinService";
+import { initializeDb } from "./src/services/dbService";
 import React, {
   useState,
   useEffect,
@@ -68,14 +65,7 @@ export default function App() {
 useEffect(() => {
   (async () => {
     try {
-      let remote = await fetchDb();
-
-      if (!remote || !remote.sheets || remote.sheets.length === 0) {
-        remote = { sheets: DEFAULT_SHEETS, months: {} };
-        await saveDb(remote);
-      }
-
-      if (!remote.months) remote.months = {};
+    const remote = await initializeDb();
 
       setDb(remote);
       setSheetId(remote.sheets[0].id);
