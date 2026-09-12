@@ -18,16 +18,19 @@ import TopBar from "./src/components/layout/TopBar";
 import DashboardView from "./src/components/dashboard/DashboardView";
 import GlobalStyle from "./src/components/layout/GlobalStyle";
 
-
-
 import {
   uid,
   todayISO,
   monthKeyOf,
-  clampInt,
   qtyStd,
   pctAct,
 } from "./src/utils/appUtils";
+
+import {
+  updateEntryInDb,
+  updateNoteInDb,
+  clearEntryInDb,
+} from "./src/utils/monthDataUtils";
 
 import { DEFAULT_SHEETS } from "./src/data/defaultSheets";
 
@@ -130,113 +133,54 @@ const exportDbCsv = () => {
 
     const monthData = (db && db.months[mk]) || {};
 
-  const updateEntry = (sId, d, metricId, field, raw) => {
-    const val = clampInt(raw);
+ const updateEntry = (sId, d, metricId, field, raw) => {
+  setDb((prev) => {
+    const next = updateEntryInDb(
+      prev,
+      mk,
+      sId,
+      d,
+      metricId,
+      field,
+      raw
+    );
 
-    setDb((prev) => {
-      const next = {
-        ...prev,
-        months: {
-          ...prev.months,
-        },
-      };
+    scheduleSave(next);
 
-      const monthObj = {
-        ...(next.months[mk] || {}),
-      };
+    return next;
+  });
+};
 
-      monthObj[sId] = {
-        ...(monthObj[sId] || {}),
-      };
+ const updateNote = (sId, d, note) => {
+  setDb((prev) => {
+    const next = updateNoteInDb(
+      prev,
+      mk,
+      sId,
+      d,
+      note
+    );
 
-      monthObj[sId][d] = {
-        ...(monthObj[sId][d] || {}),
-      };
+    scheduleSave(next);
 
-      monthObj[sId][d][metricId] = {
-        ...(monthObj[sId][d][metricId] || {}),
-        [field]: val,
-      };
+    return next;
+  });
+};
 
-      next.months[mk] = monthObj;
+     const clearEntry = (sId, d) => {
+  setDb((prev) => {
+    const next = clearEntryInDb(
+      prev,
+      mk,
+      sId,
+      d
+    );
 
-      scheduleSave(next);
+    scheduleSave(next);
 
-      return next;
-    });
-  };
-
-  const updateNote = (sId, d, note) => {
-    setDb((prev) => {
-      const next = {
-        ...prev,
-        months: {
-          ...prev.months,
-        },
-      };
-
-      const monthObj = {
-        ...(next.months[mk] || {}),
-      };
-
-      monthObj[sId] = {
-        ...(monthObj[sId] || {}),
-      };
-
-      const dayObj = {
-        ...(monthObj[sId][d] || {}),
-      };
-
-      const trimmedNote = String(note ?? "");
-
-      if (trimmedNote.trim() === "") {
-        delete dayObj.note;
-      } else {
-        dayObj.note = trimmedNote;
-      }
-
-      if (Object.keys(dayObj).length === 0) {
-        delete monthObj[sId][d];
-      } else {
-        monthObj[sId][d] = dayObj;
-      }
-
-      next.months[mk] = monthObj;
-
-      scheduleSave(next);
-
-      return next;
-    });
-  };
-
-  const clearEntry = (sId, d) => {
-    setDb((prev) => {
-      const next = {
-        ...prev,
-        months: {
-          ...prev.months,
-        },
-      };
-
-      const monthObj = {
-        ...(next.months[mk] || {}),
-      };
-
-      if (monthObj[sId]) {
-        monthObj[sId] = {
-          ...monthObj[sId],
-        };
-
-        delete monthObj[sId][d];
-      }
-
-      next.months[mk] = monthObj;
-
-      scheduleSave(next);
-
-      return next;
-    });
-  };
+    return next;
+  });
+};
 
 const addSheet = (name) => {
   const s = createSheet(name);
