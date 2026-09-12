@@ -107,7 +107,24 @@ export default function App() {
   };
 
   const monthData = (db && db.months[mk]) || {};
-  const monthData = (db && db.months[mk]) || {};
+ const {
+  updateEntry,
+  updateNote,
+  clearEntry,
+  addSheet,
+  removeSheet,
+  updateSheetName,
+  addMetric,
+  updateMetric,
+  removeMetric,
+  moveSheet,
+} = useAppActions({
+  setDb,
+  setSheetId,
+  sheetId,
+  mk,
+  scheduleSave,
+});
   if (!ready || (!db && !loadError)) {
     return (
       <div
