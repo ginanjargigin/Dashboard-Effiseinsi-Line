@@ -28,7 +28,6 @@ import {
   qtyStd,
   pctAct,
 } from "./src/utils/appUtils";
-import { exportDbCsv as createCsvExport } from "./src/utils/csvUtils";
 
 import { DEFAULT_SHEETS } from "./src/data/defaultSheets";
 
