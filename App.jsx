@@ -1,35 +1,25 @@
-import { saveDb } from "./src/services/jsonbinService";
-import { initializeDb } from "./src/services/dbService";
 import React, {
   useState,
   useEffect,
   useRef,
- } from "react";
+} from "react";
+
+import { saveDb } from "./src/services/jsonbinService";
+import { initializeDb } from "./src/services/dbService";
+import { createSaveScheduler } from "./src/services/saveService";
 
 import { C } from "./src/constants/appConstants";
-import SheetTabs from "./src/components/layout/SheetTabs";
-import InputView from "./src/components/input/InputView";
-import SettingsView from "./src/components/settings/SettingsView";
-import TopBar from "./src/components/layout/TopBar";
-import DashboardView from "./src/components/dashboard/DashboardView";
-import GlobalStyle from "./src/components/layout/GlobalStyle";
 
 import {
   todayISO,
   monthKeyOf,
- } from "./src/utils/appUtils";
+} from "./src/utils/appUtils";
 
 import {
   updateEntryInDb,
   updateNoteInDb,
   clearEntryInDb,
 } from "./src/utils/monthDataUtils";
-
-import {
-  AlertTriangle,
-} from "lucide-react";
-
-import { exportDbCsv as createCsvExport } from "./src/utils/csvUtils";
 
 import {
   createSheet,
@@ -41,11 +31,23 @@ import {
   removeMetricFromDb,
   moveSheetInDb,
 } from "./src/utils/sheetUtils";
-import { createSaveScheduler } from "./src/services/saveService";
 
+import { exportDbCsv as createCsvExport } from "./src/utils/csvUtils";
+
+import SheetTabs from "./src/components/layout/SheetTabs";
+import InputView from "./src/components/input/InputView";
+import SettingsView from "./src/components/settings/SettingsView";
+import TopBar from "./src/components/layout/TopBar";
+import DashboardView from "./src/components/dashboard/DashboardView";
+import GlobalStyle from "./src/components/layout/GlobalStyle";
+
+import {
+  AlertTriangle,
+} from "lucide-react";
 
 
 /* ----------------------------------- App ------------------------------------- */
+
 export default function App() {
   const [db, setDb] = useState(null);
   const [sheetId, setSheetId] = useState(null);
@@ -53,212 +55,225 @@ export default function App() {
   const [view, setView] = useState("input");
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState(null);
-  const [saveState, setSaveState] = useState("idle");  
+  const [saveState, setSaveState] = useState("idle");
+
   const mk = monthKeyOf(date);
 
-useEffect(() => {
-  (async () => {
-    try {
-    const remote = await initializeDb();
+  useEffect(() => {
+    (async () => {
+      try {
+        const remote = await initializeDb();
 
-      setDb(remote);
-      setSheetId(remote.sheets[0].id);
-      setReady(true);
+        setDb(remote);
+        setSheetId(remote.sheets[0].id);
+        setReady(true);
+      } catch (e) {
+        console.error("JSONBin connection error:", e);
 
-    } catch (e) {
-      console.error("JSONBin connection error:", e);
+        let message =
+          "Tidak dapat terhubung ke server JSONBin. Periksa koneksi internet.";
 
-      let message =
-        "Tidak dapat terhubung ke server JSONBin. Periksa koneksi internet.";
+        if (e?.type === "ACCESS_KEY_INVALID") {
+          message =
+            "Access Key JSONBin tidak valid. Periksa Access Key yang digunakan aplikasi.";
+        } else if (e?.type === "ACCESS_DENIED") {
+          message =
+            "Akses ke Bin JSONBin ditolak. Periksa izin Access Key.";
+        } else if (e?.type === "BIN_NOT_FOUND") {
+          message =
+            "Bin JSONBin tidak ditemukan. Periksa Bin ID.";
+        } else if (e?.type === "RATE_LIMIT") {
+          message =
+            "Terlalu banyak permintaan ke JSONBin. Silakan coba lagi beberapa saat.";
+        } else if (e?.type === "SERVER_ERROR") {
+          message =
+            `JSONBin sedang mengalami gangguan (HTTP ${e.status}). Data kamu tidak hilang. Silakan coba lagi beberapa saat.`;
+        } else if (e?.type === "INVALID_RESPONSE") {
+          message =
+            "JSONBin memberikan respons yang tidak valid. Silakan coba lagi.";
+        }
 
-      if (e?.type === "ACCESS_KEY_INVALID") {
-        message =
-          "Access Key JSONBin tidak valid. Periksa Access Key yang digunakan aplikasi.";
-      } else if (e?.type === "ACCESS_DENIED") {
-        message =
-          "Akses ke Bin JSONBin ditolak. Periksa izin Access Key.";
-      } else if (e?.type === "BIN_NOT_FOUND") {
-        message =
-          "Bin JSONBin tidak ditemukan. Periksa Bin ID.";
-      } else if (e?.type === "RATE_LIMIT") {
-        message =
-          "Terlalu banyak permintaan ke JSONBin. Silakan coba lagi beberapa saat.";
-      } else if (e?.type === "SERVER_ERROR") {
-        message =
-          `JSONBin sedang mengalami gangguan (HTTP ${e.status}). Data kamu tidak hilang. Silakan coba lagi beberapa saat.`;
-      } else if (e?.type === "INVALID_RESPONSE") {
-        message =
-          "JSONBin memberikan respons yang tidak valid. Silakan coba lagi.";
+        setLoadError(message);
+        setReady(true);
       }
+    })();
+  }, []);
 
-      setLoadError(message);
-      setReady(true);
-    }
-  })();
-}, []);
+  const saveSchedulerRef = useRef(null);
 
-const saveSchedulerRef = useRef(null);
+  if (!saveSchedulerRef.current) {
+    saveSchedulerRef.current = createSaveScheduler({
+      saveDb,
+      setSaveState,
+      delay: 600,
+    });
+  }
 
-if (!saveSchedulerRef.current) {
-  saveSchedulerRef.current = createSaveScheduler({
-    saveDb,
-    setSaveState,
-    delay: 600,
-  });
-}
-
-const scheduleSave = (nextDb) => {
-  saveSchedulerRef.current.schedule(nextDb);
-};
+  const scheduleSave = (nextDb) => {
+    saveSchedulerRef.current.schedule(nextDb);
+  };
 
   useEffect(() => {
-  return () => {
-    saveSchedulerRef.current?.cancel();
+    return () => {
+      saveSchedulerRef.current?.cancel();
+    };
+  }, []);
+
+  const exportDbCsv = () => {
+    createCsvExport(db, todayISO());
   };
-}, []);
 
-const exportDbCsv = () => {
-  createCsvExport(db, todayISO());
-};
+  const monthData = (db && db.months[mk]) || {};
 
-    const monthData = (db && db.months[mk]) || {};
+  const updateEntry = (sId, d, metricId, field, raw) => {
+    setDb((prev) => {
+      const next = updateEntryInDb(
+        prev,
+        mk,
+        sId,
+        d,
+        metricId,
+        field,
+        raw
+      );
 
- const updateEntry = (sId, d, metricId, field, raw) => {
-  setDb((prev) => {
-    const next = updateEntryInDb(
-      prev,
-      mk,
-      sId,
-      d,
-      metricId,
-      field,
-      raw
-    );
+      scheduleSave(next);
 
-    scheduleSave(next);
+      return next;
+    });
+  };
 
-    return next;
-  });
-};
+  const updateNote = (sId, d, note) => {
+    setDb((prev) => {
+      const next = updateNoteInDb(
+        prev,
+        mk,
+        sId,
+        d,
+        note
+      );
 
- const updateNote = (sId, d, note) => {
-  setDb((prev) => {
-    const next = updateNoteInDb(
-      prev,
-      mk,
-      sId,
-      d,
-      note
-    );
+      scheduleSave(next);
 
-    scheduleSave(next);
+      return next;
+    });
+  };
 
-    return next;
-  });
-};
+  const clearEntry = (sId, d) => {
+    setDb((prev) => {
+      const next = clearEntryInDb(
+        prev,
+        mk,
+        sId,
+        d
+      );
 
-     const clearEntry = (sId, d) => {
-  setDb((prev) => {
-    const next = clearEntryInDb(
-      prev,
-      mk,
-      sId,
-      d
-    );
+      scheduleSave(next);
 
-    scheduleSave(next);
+      return next;
+    });
+  };
 
-    return next;
-  });
-};
+  const addSheet = (name) => {
+    const s = createSheet(name);
 
-const addSheet = (name) => {
-  const s = createSheet(name);
+    setDb((prev) => {
+      const next = addSheetToDb(prev, s);
 
-  setDb((prev) => {
-    const next = addSheetToDb(prev, s);
+      scheduleSave(next);
 
-    scheduleSave(next);
+      return next;
+    });
 
-    return next;
-  });
+    setSheetId(s.id);
+  };
 
-  setSheetId(s.id);
-};
+  const removeSheet = (sId) => {
+    setDb((prev) => {
+      const next = removeSheetFromDb(prev, sId);
 
- const removeSheet = (sId) => {
-  setDb((prev) => {
-    const next = removeSheetFromDb(prev, sId);
+      scheduleSave(next);
 
-    scheduleSave(next);
+      if (sheetId === sId && next.sheets.length) {
+        setSheetId(next.sheets[0].id);
+      }
 
-    if (sheetId === sId && next.sheets.length) {
-      setSheetId(next.sheets[0].id);
-    }
+      return next;
+    });
+  };
 
-    return next;
-  });
-};
+  const updateSheetName = (sId, name) => {
+    setDb((prev) => {
+      const next = updateSheetNameInDb(
+        prev,
+        sId,
+        name
+      );
 
- const updateSheetName = (sId, name) => {
-  setDb((prev) => {
-    const next = updateSheetNameInDb(prev, sId, name);
+      scheduleSave(next);
 
-    scheduleSave(next);
+      return next;
+    });
+  };
 
-    return next;
-  });
-};
+  const addMetric = (sId) => {
+    setDb((prev) => {
+      const next = addMetricToDb(prev, sId);
 
-    const addMetric = (sId) => {
-  setDb((prev) => {
-    const next = addMetricToDb(prev, sId);
+      scheduleSave(next);
 
-    scheduleSave(next);
+      return next;
+    });
+  };
 
-    return next;
-  });
-};
+  const updateMetric = (
+    sId,
+    mId,
+    field,
+    value
+  ) => {
+    setDb((prev) => {
+      const next = updateMetricInDb(
+        prev,
+        sId,
+        mId,
+        field,
+        value
+      );
 
-    const updateMetric = (sId, mId, field, value) => {
-  setDb((prev) => {
-    const next = updateMetricInDb(
-      prev,
-      sId,
-      mId,
-      field,
-      value
-    );
+      scheduleSave(next);
 
-    scheduleSave(next);
+      return next;
+    });
+  };
 
-    return next;
-  });
-};
-  
   const removeMetric = (sId, mId) => {
-  setDb((prev) => {
-    const next = removeMetricFromDb(prev, sId, mId);
+    setDb((prev) => {
+      const next = removeMetricFromDb(
+        prev,
+        sId,
+        mId
+      );
 
-    scheduleSave(next);
+      scheduleSave(next);
 
-    return next;
-  });
-};
-  
-   const moveSheet = (sId, direction) => {
-  setDb((prev) => {
-    const next = moveSheetInDb(
-      prev,
-      sId,
-      direction
-    );
+      return next;
+    });
+  };
 
-    scheduleSave(next);
+  const moveSheet = (sId, direction) => {
+    setDb((prev) => {
+      const next = moveSheetInDb(
+        prev,
+        sId,
+        direction
+      );
 
-    return next;
-  });
-};
+      scheduleSave(next);
+
+      return next;
+    });
+  };
 
   if (!ready || (!db && !loadError)) {
     return (
@@ -295,15 +310,21 @@ const addSheet = (name) => {
           textAlign: "center",
         }}
       >
-        <AlertTriangle color={C.bad} size={28} />
+        <AlertTriangle
+          color={C.bad}
+          size={28}
+        />
+
         <div>{loadError}</div>
       </div>
     );
   }
 
   const sheets = db.sheets;
+
   const currentSheet =
-    sheets.find((s) => s.id === sheetId) || sheets[0];
+    sheets.find((s) => s.id === sheetId) ||
+    sheets[0];
 
   return (
     <div
@@ -368,4 +389,3 @@ const addSheet = (name) => {
     </div>
   );
 }
-
