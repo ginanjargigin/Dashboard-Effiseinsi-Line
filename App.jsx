@@ -36,6 +36,19 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
+import { exportDbCsv as createCsvExport } from "./src/utils/csvUtils";
+
+import {
+  createSheet,
+  addSheetToDb,
+  removeSheetFromDb,
+  updateSheetNameInDb,
+  addMetricToDb,
+  updateMetricInDb,
+  removeMetricFromDb,
+  moveSheetInDb,
+} from "./src/utils/sheetUtils";
+
 
 
 /* ----------------------------------- App ------------------------------------- */
@@ -226,167 +239,93 @@ const exportDbCsv = () => {
     });
   };
 
-  const addSheet = (name) => {
-    const s = {
-      id: uid(),
-      name,
-      metrics: [{ id: uid(), name: "Std", ct: 10 }],
-    };
+const addSheet = (name) => {
+  const s = createSheet(name);
 
-    setDb((prev) => {
-      const next = {
-        ...prev,
-        sheets: [...prev.sheets, s],
-      };
+  setDb((prev) => {
+    const next = addSheetToDb(prev, s);
 
-      scheduleSave(next);
+    scheduleSave(next);
 
-      return next;
-    });
+    return next;
+  });
 
-    setSheetId(s.id);
-  };
+  setSheetId(s.id);
+};
 
-  const removeSheet = (sId) => {
-    setDb((prev) => {
-      const next = {
-        ...prev,
-        sheets: prev.sheets.filter((s) => s.id !== sId),
-      };
+ const removeSheet = (sId) => {
+  setDb((prev) => {
+    const next = removeSheetFromDb(prev, sId);
 
-      scheduleSave(next);
+    scheduleSave(next);
 
-      if (sheetId === sId && next.sheets.length) {
-        setSheetId(next.sheets[0].id);
-      }
+    if (sheetId === sId && next.sheets.length) {
+      setSheetId(next.sheets[0].id);
+    }
 
-      return next;
-    });
-  };
+    return next;
+  });
+};
 
-  const updateSheetName = (sId, name) => {
-    setDb((prev) => {
-      const next = {
-        ...prev,
-        sheets: prev.sheets.map((s) =>
-          s.id === sId ? { ...s, name } : s
-        ),
-      };
+ const updateSheetName = (sId, name) => {
+  setDb((prev) => {
+    const next = updateSheetNameInDb(prev, sId, name);
 
-      scheduleSave(next);
+    scheduleSave(next);
 
-      return next;
-    });
-  };
+    return next;
+  });
+};
 
-  const addMetric = (sId) => {
-    setDb((prev) => {
-      const next = {
-        ...prev,
-        sheets: prev.sheets.map((s) =>
-          s.id === sId
-            ? {
-                ...s,
-                metrics: [
-                  ...s.metrics,
-                  {
-                    id: uid(),
-                    name: "Baru",
-                    ct: 10,
-                  },
-                ],
-              }
-            : s
-        ),
-      };
+    const addMetric = (sId) => {
+  setDb((prev) => {
+    const next = addMetricToDb(prev, sId);
 
-      scheduleSave(next);
+    scheduleSave(next);
 
-      return next;
-    });
-  };
+    return next;
+  });
+};
 
-  const updateMetric = (sId, mId, field, value) => {
-    setDb((prev) => {
-      const next = {
-        ...prev,
-        sheets: prev.sheets.map((s) => {
-          if (s.id !== sId) return s;
+    const updateMetric = (sId, mId, field, value) => {
+  setDb((prev) => {
+    const next = updateMetricInDb(
+      prev,
+      sId,
+      mId,
+      field,
+      value
+    );
 
-          return {
-            ...s,
-            metrics: s.metrics.map((m) =>
-              m.id === mId
-                ? {
-                    ...m,
-                    [field]:
-                      field === "ct"
-                        ? Number(value) || 0
-                        : value,
-                  }
-                : m
-            ),
-          };
-        }),
-      };
+    scheduleSave(next);
 
-      scheduleSave(next);
-
-      return next;
-    });
-  };
-
+    return next;
+  });
+};
+  
   const removeMetric = (sId, mId) => {
-    setDb((prev) => {
-      const next = {
-        ...prev,
-        sheets: prev.sheets.map((s) =>
-          s.id === sId
-            ? {
-                ...s,
-                metrics: s.metrics.filter(
-                  (m) => m.id !== mId
-                ),
-              }
-            : s
-        ),
-      };
+  setDb((prev) => {
+    const next = removeMetricFromDb(prev, sId, mId);
 
-      scheduleSave(next);
+    scheduleSave(next);
 
-      return next;
-    });
-  };
+    return next;
+  });
+};
+  
+   const moveSheet = (sId, direction) => {
+  setDb((prev) => {
+    const next = moveSheetInDb(
+      prev,
+      sId,
+      direction
+    );
 
-  const moveSheet = (sId, direction) => {
-    setDb((prev) => {
-      const arr = [...prev.sheets];
-      const idx = arr.findIndex((s) => s.id === sId);
-      const swapWith = idx + direction;
+    scheduleSave(next);
 
-      if (
-        idx === -1 ||
-        swapWith < 0 ||
-        swapWith >= arr.length
-      ) {
-        return prev;
-      }
-
-      [arr[idx], arr[swapWith]] = [
-        arr[swapWith],
-        arr[idx],
-      ];
-
-      const next = {
-        ...prev,
-        sheets: arr,
-      };
-
-      scheduleSave(next);
-
-      return next;
-    });
-  };
+    return next;
+  });
+};
 
   if (!ready || (!db && !loadError)) {
     return (
