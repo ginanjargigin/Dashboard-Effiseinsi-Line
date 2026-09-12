@@ -127,6 +127,12 @@ const scheduleSave = (nextDb) => {
   saveSchedulerRef.current.schedule(nextDb);
 };
 
+  useEffect(() => {
+  return () => {
+    saveSchedulerRef.current?.cancel();
+  };
+}, []);
+
 const exportDbCsv = () => {
   createCsvExport(db, todayISO());
 };
