@@ -169,6 +169,7 @@ export default function InputView({
 
           <input
             type="date"
+            lang="id-ID"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             style={{
