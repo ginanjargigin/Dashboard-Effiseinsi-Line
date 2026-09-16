@@ -25,9 +25,6 @@ export default function MetricCard({
 
     if (!navigationKeys.includes(event.key)) return;
 
-    // Urutan input:
-    // PCS 1 → Menit 1 → PCS 2 → Menit 2 → PCS 3 → Menit 3 → ...
-
     const inputs = Array.from(
       document.querySelectorAll(".num-field-input")
     );
@@ -59,10 +56,8 @@ export default function MetricCard({
 
     event.preventDefault();
 
-    const target = inputs[targetIndex];
-
-    target.focus();
-    target.select();
+    inputs[targetIndex].focus();
+    inputs[targetIndex].select();
   };
 
   return (
@@ -70,24 +65,21 @@ export default function MetricCard({
       style={{
         background: C.panel,
         border: `1px solid ${C.amber}`,
-        borderRadius: 12,
+        borderRadius: 10,
 
         /*
-         * COMPACT:
-         * Sebelumnya:
-         * padding: "22px 26px 24px"
-         *
-         * Sekarang lebih kecil agar nyaman di HP.
+         * ULTRA COMPACT
          */
-        padding: "12px 14px",
+        padding: "8px 10px",
 
-        boxShadow: "0 2px 8px rgba(0,0,0,.10)",
         width: "100%",
         boxSizing: "border-box",
+
+        boxShadow: "0 2px 6px rgba(0,0,0,.08)",
       }}
     >
       {/* ==================================
-          HEADER KARTU
+          HEADER
           ================================== */}
 
       <div
@@ -95,31 +87,37 @@ export default function MetricCard({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: 8,
-          marginBottom: 8,
+
+          gap: 6,
+
+          marginBottom: 5,
+
           minWidth: 0,
         }}
       >
-        {/* Nama Metric + CT */}
+        {/* NAME + CT */}
 
         <div
           style={{
             display: "flex",
             alignItems: "baseline",
-            gap: 5,
+
+            gap: 4,
+
             minWidth: 0,
+
             overflow: "hidden",
             whiteSpace: "nowrap",
           }}
         >
           <span
             style={{
-              fontSize: 17,
-              fontWeight: 700,
               color: C.text,
-              lineHeight: 1.1,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
+
+              fontSize: 15,
+              fontWeight: 700,
+
+              lineHeight: 1,
             }}
           >
             {metric.name}
@@ -128,8 +126,10 @@ export default function MetricCard({
           <span
             style={{
               color: C.muted,
-              fontSize: 11,
+
+              fontSize: 9.5,
               fontWeight: 500,
+
               whiteSpace: "nowrap",
             }}
           >
@@ -137,15 +137,20 @@ export default function MetricCard({
           </span>
         </div>
 
-        {/* Actual CT */}
+        {/* ACTUAL CT */}
 
         <div
           className="num-field"
           style={{
             color: C.steel,
-            fontSize: 11.5,
+
+            fontSize: 10,
             fontWeight: 700,
+
+            lineHeight: 1,
+
             whiteSpace: "nowrap",
+
             flexShrink: 0,
           }}
         >
@@ -164,15 +169,14 @@ export default function MetricCard({
           display: "grid",
 
           /*
-           * PCS sedikit lebih lebar.
-           * Menit cukup untuk angka.
-           * STD Pcs dibuat fixed supaya
-           * tidak memakan ruang berlebihan.
+           * PCS  : 1.1
+           * MIN  : 0.9
+           * STD  : 56px
            */
           gridTemplateColumns:
-            "minmax(0, 1.15fr) minmax(0, 0.85fr) 62px",
+            "minmax(0, 1.1fr) minmax(0, 0.9fr) 56px",
 
-          gap: 7,
+          gap: 6,
 
           alignItems: "end",
 
@@ -180,7 +184,7 @@ export default function MetricCard({
         }}
       >
         {/* ==================================
-            ACT PCS
+            PCS
             ================================== */}
 
         <div
@@ -191,16 +195,22 @@ export default function MetricCard({
           <label
             style={{
               display: "block",
+
               color: C.muted,
-              fontSize: 10.5,
-              lineHeight: 1.2,
-              marginBottom: 4,
+
+              fontSize: 9,
+
+              lineHeight: 1,
+
+              marginBottom: 3,
+
               whiteSpace: "nowrap",
+
               overflow: "hidden",
               textOverflow: "ellipsis",
             }}
           >
-            ACT Pcs (Total)
+            ACT Pcs
           </label>
 
           <input
@@ -221,18 +231,24 @@ export default function MetricCard({
             onKeyDown={handleArrowNavigation}
             style={{
               width: "100%",
-              height: 42,
+
+              height: 38,
 
               background: C.panel2,
-              border: `1px solid ${C.line}`,
-              borderRadius: 8,
 
-              padding: "0 10px",
+              border: `1px solid ${C.line}`,
+
+              borderRadius: 7,
+
+              padding: "0 8px",
 
               color: C.text,
 
-              fontSize: 16,
+              fontSize: 15,
+
               fontWeight: 600,
+
+              lineHeight: 1,
 
               outline: "none",
 
@@ -242,7 +258,7 @@ export default function MetricCard({
         </div>
 
         {/* ==================================
-            ACT MIN
+            MENIT
             ================================== */}
 
         <div
@@ -253,16 +269,22 @@ export default function MetricCard({
           <label
             style={{
               display: "block",
+
               color: C.muted,
-              fontSize: 10.5,
-              lineHeight: 1.2,
-              marginBottom: 4,
+
+              fontSize: 9,
+
+              lineHeight: 1,
+
+              marginBottom: 3,
+
               whiteSpace: "nowrap",
+
               overflow: "hidden",
               textOverflow: "ellipsis",
             }}
           >
-            ACT Min (Menit)
+            ACT Min
           </label>
 
           <input
@@ -283,18 +305,24 @@ export default function MetricCard({
             onKeyDown={handleArrowNavigation}
             style={{
               width: "100%",
-              height: 42,
+
+              height: 38,
 
               background: C.panel2,
-              border: `1px solid ${C.line}`,
-              borderRadius: 8,
 
-              padding: "0 10px",
+              border: `1px solid ${C.line}`,
+
+              borderRadius: 7,
+
+              padding: "0 8px",
 
               color: C.text,
 
-              fontSize: 16,
+              fontSize: 15,
+
               fontWeight: 600,
+
+              lineHeight: 1,
 
               outline: "none",
 
@@ -310,16 +338,22 @@ export default function MetricCard({
         <div
           style={{
             minWidth: 0,
+
             textAlign: "right",
           }}
         >
           <label
             style={{
               display: "block",
+
               color: C.muted,
-              fontSize: 10.5,
-              lineHeight: 1.2,
-              marginBottom: 4,
+
+              fontSize: 9,
+
+              lineHeight: 1,
+
+              marginBottom: 3,
+
               whiteSpace: "nowrap",
             }}
           >
@@ -329,24 +363,30 @@ export default function MetricCard({
           <div
             className="num-field"
             style={{
-              height: 42,
+              height: 38,
 
               display: "flex",
+
               alignItems: "center",
+
               justifyContent: "flex-end",
 
               color: metric.qs
                 ? C.text
                 : C.muted,
 
-              fontSize: 16,
+              fontSize: 15,
+
               fontWeight: 700,
 
-              padding: "0 2px",
+              lineHeight: 1,
+
+              padding: "0 1px",
 
               boxSizing: "border-box",
 
               overflow: "hidden",
+
               whiteSpace: "nowrap",
             }}
           >
