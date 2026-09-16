@@ -1,10 +1,19 @@
-  /* ---------------------------------- metric card --------------------------------- */
 import { C } from "../../constants/appConstants";
-export default function MetricCard({ sheetId, date, metric, updateEntry }) {
+
+export default function MetricCard({
+  sheetId,
+  date,
+  metric,
+  updateEntry,
+}) {
   const actualCt =
     Number(metric.pcs) > 0
       ? Number(metric.menit || 0) / Number(metric.pcs)
       : null;
+
+  /* ----------------------------------
+     KEYBOARD NAVIGATION
+     ---------------------------------- */
 
   const handleArrowNavigation = (event) => {
     const navigationKeys = [
@@ -18,6 +27,7 @@ export default function MetricCard({ sheetId, date, metric, updateEntry }) {
 
     // Urutan input:
     // PCS 1 → Menit 1 → PCS 2 → Menit 2 → PCS 3 → Menit 3 → ...
+
     const inputs = Array.from(
       document.querySelectorAll(".num-field-input")
     );
@@ -50,6 +60,7 @@ export default function MetricCard({ sheetId, date, metric, updateEntry }) {
     event.preventDefault();
 
     const target = inputs[targetIndex];
+
     target.focus();
     target.select();
   };
@@ -59,72 +70,134 @@ export default function MetricCard({ sheetId, date, metric, updateEntry }) {
       style={{
         background: C.panel,
         border: `1px solid ${C.amber}`,
-        borderRadius: 16,
-        padding: "22px 26px 24px",
+        borderRadius: 12,
+
+        /*
+         * COMPACT:
+         * Sebelumnya:
+         * padding: "22px 26px 24px"
+         *
+         * Sekarang lebih kecil agar nyaman di HP.
+         */
+        padding: "12px 14px",
+
         boxShadow: "0 2px 8px rgba(0,0,0,.10)",
+        width: "100%",
+        boxSizing: "border-box",
       }}
     >
-      {/* HEADER KARTU */}
+      {/* ==================================
+          HEADER KARTU
+          ================================== */}
+
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: 10,
-          marginBottom: 12,
+          gap: 8,
+          marginBottom: 8,
+          minWidth: 0,
         }}
       >
+        {/* Nama Metric + CT */}
+
         <div
           style={{
-            fontSize: 22,
-            fontWeight: 700,
-            color: C.text,
-            lineHeight: 1.1,
+            display: "flex",
+            alignItems: "baseline",
+            gap: 5,
+            minWidth: 0,
+            overflow: "hidden",
+            whiteSpace: "nowrap",
           }}
         >
-          {metric.name}
+          <span
+            style={{
+              fontSize: 17,
+              fontWeight: 700,
+              color: C.text,
+              lineHeight: 1.1,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {metric.name}
+          </span>
+
           <span
             style={{
               color: C.muted,
-              fontSize: 14,
+              fontSize: 11,
               fontWeight: 500,
-              marginLeft: 7,
+              whiteSpace: "nowrap",
             }}
           >
             • CT {Number(metric.ct || 0).toFixed(2)}s
           </span>
         </div>
 
+        {/* Actual CT */}
+
         <div
           className="num-field"
           style={{
             color: C.steel,
-            fontSize: 14,
+            fontSize: 11.5,
             fontWeight: 700,
             whiteSpace: "nowrap",
+            flexShrink: 0,
           }}
         >
-          {actualCt !== null ? `${actualCt.toFixed(3)} min/pcs` : "—"}
+          {actualCt !== null
+            ? `${actualCt.toFixed(3)} min/pcs`
+            : "—"}
         </div>
       </div>
 
-      {/* INPUT + STD PCS */}
+      {/* ==================================
+          INPUT GRID
+          ================================== */}
+
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1.2fr 0.8fr 0.65fr",
-          gap: 12,
+
+          /*
+           * PCS sedikit lebih lebar.
+           * Menit cukup untuk angka.
+           * STD Pcs dibuat fixed supaya
+           * tidak memakan ruang berlebihan.
+           */
+          gridTemplateColumns:
+            "minmax(0, 1.15fr) minmax(0, 0.85fr) 62px",
+
+          gap: 7,
+
           alignItems: "end",
+
+          width: "100%",
         }}
       >
-        {/* PCS */}
-        <div>
+        {/* ==================================
+            ACT PCS
+            ================================== */}
+
+        <div
+          style={{
+            minWidth: 0,
+          }}
+        >
           <label
             style={{
               display: "block",
               color: C.muted,
-              fontSize: 14,
-              marginBottom: 8,
+              fontSize: 10.5,
+              lineHeight: 1.2,
+              marginBottom: 4,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
             }}
           >
             ACT Pcs (Total)
@@ -148,27 +221,45 @@ export default function MetricCard({ sheetId, date, metric, updateEntry }) {
             onKeyDown={handleArrowNavigation}
             style={{
               width: "100%",
-              height: 52,
+              height: 42,
+
               background: C.panel2,
               border: `1px solid ${C.line}`,
-              borderRadius: 12,
-              padding: "0 16px",
+              borderRadius: 8,
+
+              padding: "0 10px",
+
               color: C.text,
-              fontSize: 18,
+
+              fontSize: 16,
               fontWeight: 600,
+
               outline: "none",
+
+              boxSizing: "border-box",
             }}
           />
         </div>
 
-        {/* MENIT */}
-        <div>
+        {/* ==================================
+            ACT MIN
+            ================================== */}
+
+        <div
+          style={{
+            minWidth: 0,
+          }}
+        >
           <label
             style={{
               display: "block",
               color: C.muted,
-              fontSize: 14,
-              marginBottom: 8,
+              fontSize: 10.5,
+              lineHeight: 1.2,
+              marginBottom: 4,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
             }}
           >
             ACT Min (Menit)
@@ -192,27 +283,44 @@ export default function MetricCard({ sheetId, date, metric, updateEntry }) {
             onKeyDown={handleArrowNavigation}
             style={{
               width: "100%",
-              height: 52,
+              height: 42,
+
               background: C.panel2,
               border: `1px solid ${C.line}`,
-              borderRadius: 12,
-              padding: "0 16px",
+              borderRadius: 8,
+
+              padding: "0 10px",
+
               color: C.text,
-              fontSize: 18,
+
+              fontSize: 16,
               fontWeight: 600,
+
               outline: "none",
+
+              boxSizing: "border-box",
             }}
           />
         </div>
 
-        {/* STD PCS */}
-        <div>
+        {/* ==================================
+            STD PCS
+            ================================== */}
+
+        <div
+          style={{
+            minWidth: 0,
+            textAlign: "right",
+          }}
+        >
           <label
             style={{
               display: "block",
               color: C.muted,
-              fontSize: 14,
-              marginBottom: 8,
+              fontSize: 10.5,
+              lineHeight: 1.2,
+              marginBottom: 4,
+              whiteSpace: "nowrap",
             }}
           >
             STD Pcs
@@ -221,14 +329,25 @@ export default function MetricCard({ sheetId, date, metric, updateEntry }) {
           <div
             className="num-field"
             style={{
-              height: 52,
+              height: 42,
+
               display: "flex",
               alignItems: "center",
               justifyContent: "flex-end",
-              color: metric.qs ? C.text : C.muted,
-              fontSize: 18,
+
+              color: metric.qs
+                ? C.text
+                : C.muted,
+
+              fontSize: 16,
               fontWeight: 700,
-              padding: "0 8px",
+
+              padding: "0 2px",
+
+              boxSizing: "border-box",
+
+              overflow: "hidden",
+              whiteSpace: "nowrap",
             }}
           >
             {metric.qs || "—"}
@@ -238,6 +357,3 @@ export default function MetricCard({ sheetId, date, metric, updateEntry }) {
     </div>
   );
 }
-
-
-
