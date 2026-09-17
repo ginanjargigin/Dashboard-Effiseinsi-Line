@@ -1,206 +1,36 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+} from "react";
+
+import { saveDb } from "./src/services/jsonbinService";
+import { initializeDb } from "./src/services/dbService";
+import { createSaveScheduler } from "./src/services/saveService";
+
+import { C } from "./src/constants/appConstants";
+
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell,
-} from "recharts";
-import {
-  Plus, Trash2, Settings, LayoutDashboard, Keyboard, Printer, CalendarCheck, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
-  Check, X, AlertTriangle, TrendingUp, TrendingDown, Calendar,FileSpreadsheet,
-} from "lucide-react";
+  todayISO,
+  monthKeyOf,
+} from "./src/utils/appUtils";
+
+import { exportDbCsv as createCsvExport } from "./src/utils/csvUtils";
+import { useAppActions } from "./src/hooks/useAppActions";
+import SheetTabs from "./src/components/layout/SheetTabs";
+import InputView from "./src/components/input/InputView";
+import SettingsView from "./src/components/settings/SettingsView";
 import TopBar from "./src/components/layout/TopBar";
+import DashboardView from "./src/components/dashboard/DashboardView";
+import GlobalStyle from "./src/components/layout/GlobalStyle";
 
-/* ---------------------------------- tokens ---------------------------------- */
-const C = {
-  bg: "#1A1D20",
-  panel: "#232729",
-  panel2: "#2B3033",
-  line: "#383E42",
-  amber: "#F2A93B",
-  steel: "#6C93B0",
-  text: "#ECEEEF",
-  muted: "#8C949A",
-  good: "#49B96B",
-  warn: "#F2A93B",
-  bad: "#E5555C",
-};
+import {
+  AlertTriangle,
+} from "lucide-react";
 
-const uid = () => Math.random().toString(36).slice(2, 10);
-const pad2 = (n) => String(n).padStart(2, "0");
-const todayISO = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-};
-const monthKeyOf = (iso) => iso.slice(0, 7);
-const daysInMonth = (yyyyMM) => {
-  const [y, m] = yyyyMM.split("-").map(Number);
-  return new Date(y, m, 0).getDate();
-};
-const monthLabel = (yyyyMM) => {
-  const [y, m] = yyyyMM.split("-").map(Number);
-  return new Date(y, m - 1, 1).toLocaleDateString("id-ID", { month: "long", year: "numeric" });
-};
-const clampInt = (raw) => {
-  const digits = String(raw).replace(/[^0-9]/g, "");
-  if (digits === "") return "";
-  return String(parseInt(digits, 10));
-};
-const qtyStd = (menit, ct) => {
-  const m = Number(menit) || 0;
-  if (!ct || !m) return 0;
-  return Math.round((m * 60) / ct);
-};
-const pctAct = (pcs, qs) => {
-  const p = Number(pcs) || 0;
-  if (!qs) return null;
-  return (p / qs) * 100;
-};
-const statusColor = (pct) => {
-  if (pct === null) return C.muted;
-  if (pct >= 100) return C.good;
-  if (pct >= 85) return C.warn;
-  return C.bad;
-};
-
-/* ------------------------------ default sheets ------------------------------ */
-const DEFAULT_SHEETS = [
-  { id: uid(), name: "PSV 60", metrics: [{ id: uid(), name: "Std", ct: 13.4 }] },
-  { id: uid(), name: "PSV Bintang 60", metrics: [{ id: uid(), name: "Std", ct: 13.4 }] },
-  { id: uid(), name: "Ballguide Merah", metrics: [{ id: uid(), name: "Std", ct: 2.64 }] },
-  { id: uid(), name: "Ballguide Putih", metrics: [{ id: uid(), name: "Std", ct: 2.64 }] },
-  { id: uid(), name: "Reinforce Merah", metrics: [{ id: uid(), name: "Std", ct: 14.4 }] },
-  { id: uid(), name: "Reinforce Putih", metrics: [{ id: uid(), name: "Std", ct: 14.4 }] },
-  {
-    id: uid(), name: "Machining Merah",
-    metrics: [{ id: uid(), name: "LA", ct: 15 }, { id: uid(), name: "LA14", ct: 25.8 }, { id: uid(), name: "RT", ct: 13.8 }],
-  },
-  {
-    id: uid(), name: "Machining Putih",
-    metrics: [{ id: uid(), name: "LA", ct: 15 }, { id: uid(), name: "LA14", ct: 25.8 }, { id: uid(), name: "RT", ct: 13.8 }],
-  },
-  { id: uid(), name: "YTB Staking Ari", metrics: [{ id: uid(), name: "Std", ct: 49.2 }] },
-  { id: uid(), name: "Passthrough 4L45W", metrics: [{ id: uid(), name: "Std", ct: 9.6 }] },
-  { id: uid(), name: "Passthrough 4L45W Merah", metrics: [{ id: uid(), name: "Std", ct: 9.6 }] },
-  { id: uid(), name: "T862", metrics: [{ id: uid(), name: "Std", ct: 18.72 }] },
-  { id: uid(), name: "Lever Staking", metrics: [{ id: uid(), name: "Std", ct: 14.4 }] },
-  { id: uid(), name: "TSAA", metrics: [{ id: uid(), name: "Std", ct: 96 }] },
-  { id: uid(), name: "DO1N 1", metrics: [{ id: uid(), name: "Std", ct: 17.4 }] },
-  { id: uid(), name: "DO1N 2", metrics: [{ id: uid(), name: "Std", ct: 17.4 }] },
-];
-
-/* --------------------------------- storage (JSONBin.io) ----------------------------------- */
-
-const JSONBIN_BASE = "/api/jsonbin";
-
-class JsonBinError extends Error {
-  constructor(type, status = null, message = "") {
-    super(message);
-    this.name = "JsonBinError";
-    this.type = type;
-    this.status = status;
-  }
-}
-
-function getJsonBinError(status, method = "GET") {
-  if (status === 401) {
-    return new JsonBinError(
-      "ACCESS_KEY_INVALID",
-      status,
-      `${method} JSONBin gagal: Access Key tidak valid.`
-    );
-  }
-
-  if (status === 403) {
-    return new JsonBinError(
-      "ACCESS_DENIED",
-      status,
-      `${method} JSONBin gagal: akses ke Bin ditolak.`
-    );
-  }
-
-  if (status === 404) {
-    return new JsonBinError(
-      "BIN_NOT_FOUND",
-      status,
-      `${method} JSONBin gagal: Bin tidak ditemukan.`
-    );
-  }
-
-  if (status === 429) {
-    return new JsonBinError(
-      "RATE_LIMIT",
-      status,
-      `${method} JSONBin gagal: terlalu banyak permintaan.`
-    );
-  }
-
-  if ([500, 502, 503, 504].includes(status)) {
-    return new JsonBinError(
-      "SERVER_ERROR",
-      status,
-      `${method} JSONBin gagal: server JSONBin sedang bermasalah.`
-    );
-  }
-
-  return new JsonBinError(
-    "UNKNOWN_HTTP_ERROR",
-    status,
-    `${method} JSONBin gagal dengan HTTP ${status}.`
-  );
-}
-
-async function fetchDb() {
-  let res;
-
-  try {
-    res = await fetch(JSONBIN_BASE);
-  } catch (error) {
-    throw new JsonBinError(
-      "NETWORK_ERROR",
-      null,
-      "Tidak dapat terhubung ke server."
-    );
-  }
-
-  if (!res.ok) {
-    throw getJsonBinError(res.status, "GET");
-  }
-
-  try {
-    const json = await res.json();
-    return json.record || null;
-  } catch (error) {
-    throw new JsonBinError(
-      "INVALID_RESPONSE",
-      null,
-      "Server memberikan respons yang tidak valid."
-    );
-  }
-}
-
-async function saveDb(db) {
-  let res;
-
-  try {
-    res = await fetch(JSONBIN_BASE, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(db),
-    });
-  } catch (error) {
-    throw new JsonBinError(
-      "NETWORK_ERROR",
-      null,
-      "Tidak dapat terhubung ke server."
-    );
-  }
-
-  if (!res.ok) {
-    throw getJsonBinError(res.status, "PUT");
-  }
-}
 
 /* ----------------------------------- App ------------------------------------- */
+
 export default function App() {
   const [db, setDb] = useState(null);
   const [sheetId, setSheetId] = useState(null);
@@ -209,25 +39,17 @@ export default function App() {
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState(null);
   const [saveState, setSaveState] = useState("idle");
-  const saveTimer = useRef(null);
+
   const mk = monthKeyOf(date);
 
-   useEffect(() => {
+  useEffect(() => {
     (async () => {
       try {
-        let remote = await fetchDb();
-
-        if (!remote || !remote.sheets || remote.sheets.length === 0) {
-          remote = { sheets: DEFAULT_SHEETS, months: {} };
-          await saveDb(remote);
-        }
-
-        if (!remote.months) remote.months = {};
+        const remote = await initializeDb();
 
         setDb(remote);
         setSheetId(remote.sheets[0].id);
         setReady(true);
-
       } catch (e) {
         console.error("JSONBin connection error:", e);
 
@@ -260,310 +82,62 @@ export default function App() {
     })();
   }, []);
 
-  const scheduleSave = useCallback((nextDb) => {
-    setSaveState("saving");
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(async () => {
-      try {
-        await saveDb(nextDb);
-        setSaveState("saved");
-      } catch {
-        setSaveState("error");
-      }
-      setTimeout(() => setSaveState("idle"), 1500);
-    }, 600);
+  const saveSchedulerRef = useRef(null);
+
+  if (!saveSchedulerRef.current) {
+    saveSchedulerRef.current = createSaveScheduler({
+      saveDb,
+      setSaveState,
+      delay: 600,
+    });
+  }
+
+  const scheduleSave = (nextDb) => {
+    saveSchedulerRef.current.schedule(nextDb);
+  };
+
+  useEffect(() => {
+    return () => {
+      saveSchedulerRef.current?.cancel();
+    };
   }, []);
 
   const exportDbCsv = () => {
-  if (!db) {
-    alert("Data belum tersedia");
-    return;
-  }
-
-  const months = db.months || {};
-  const rows = [];
-
-  rows.push([
-    "sheetId",
-    "sheetName",
-    "date",
-    "metricId",
-    "metricName",
-    "ct_s",
-    "pcs",
-    "menit",
-    "std_pcs",
-    "pct_act",
-  ]);
-
-  db.sheets.forEach((sheet) => {
-    Object.keys(months)
-      .sort()
-      .forEach((monthKey) => {
-        const monthObj = months[monthKey] || {};
-        const sheetObj = monthObj[sheet.id] || {};
-
-        Object.keys(sheetObj)
-          .sort()
-          .forEach((dateKey) => {
-            const day = sheetObj[dateKey] || {};
-
-            sheet.metrics.forEach((m) => {
-              const value = day[m.id] || {};
-
-              const pcs = value.pcs || "";
-              const menit = value.menit || "";
-
-              const stdPcs = qtyStd(menit, m.ct);
-              const pct = pctAct(pcs, stdPcs);
-
-              rows.push([
-                sheet.id,
-                sheet.name,
-                dateKey,
-                m.id,
-                m.name,
-                m.ct,
-                pcs,
-                menit,
-                stdPcs || "",
-                pct === null ? "" : pct.toFixed(2),
-              ]);
-            });
-          });
-      });
-  });
-
-  const csv = rows
-    .map((cols) =>
-      cols
-        .map((field) => {
-          if (field === null || field === undefined) return "";
-
-          const s = String(field);
-
-          if (
-            s.includes('"') ||
-            s.includes(",") ||
-            s.includes("\n")
-          ) {
-            return `"${s.replace(/"/g, '""')}"`;
-          }
-
-          return s;
-        })
-        .join(",")
-    )
-    .join("\n");
-
-  const blob = new Blob(
-    ["\ufeff", csv],
-    {
-      type: "text/csv;charset=utf-8;",
-    }
-  );
-
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `efisiensi_export_${todayISO()}.csv`;
-
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-
-  URL.revokeObjectURL(url);
-};
-
-const monthData = (db && db.months[mk]) || {};
-
-const updateEntry = (sId, d, metricId, field, raw) => {
-  const val = clampInt(raw);
-
-  setDb((prev) => {
-    const next = {
-      ...prev,
-      months: {
-        ...prev.months,
-      },
-    };
-
-    const monthObj = {
-      ...(next.months[mk] || {}),
-    };
-
-    monthObj[sId] = {
-      ...(monthObj[sId] || {}),
-    };
-
-    monthObj[sId][d] = {
-      ...(monthObj[sId][d] || {}),
-    };
-
-    monthObj[sId][d][metricId] = {
-      ...(monthObj[sId][d][metricId] || {}),
-      [field]: val,
-    };
-
-    next.months[mk] = monthObj;
-
-    scheduleSave(next);
-
-    return next;
-  });
-};
-
-const updateNote = (sId, d, note) => {
-  setDb((prev) => {
-    const next = {
-      ...prev,
-      months: {
-        ...prev.months,
-      },
-    };
-
-    const monthObj = {
-      ...(next.months[mk] || {}),
-    };
-
-    monthObj[sId] = {
-      ...(monthObj[sId] || {}),
-    };
-
-    const dayObj = {
-      ...(monthObj[sId][d] || {}),
-    };
-
-    const trimmedNote = String(note ?? "");
-
-    if (trimmedNote.trim() === "") {
-      delete dayObj.note;
-    } else {
-      dayObj.note = trimmedNote;
-    }
-
-    if (Object.keys(dayObj).length === 0) {
-      delete monthObj[sId][d];
-    } else {
-      monthObj[sId][d] = dayObj;
-    }
-
-    next.months[mk] = monthObj;
-
-    scheduleSave(next);
-
-    return next;
-  });
-};
-
-const clearEntry = (sId, d) => {
-  setDb((prev) => {
-    const next = {
-      ...prev,
-      months: {
-        ...prev.months,
-      },
-    };
-
-    const monthObj = {
-      ...(next.months[mk] || {}),
-    };
-
-    if (monthObj[sId]) {
-      monthObj[sId] = {
-        ...monthObj[sId],
-      };
-
-      delete monthObj[sId][d];
-    }
-
-    next.months[mk] = monthObj;
-
-    scheduleSave(next);
-
-    return next;
-  });
-};
-
-  const addSheet = (name) => {
-    const s = { id: uid(), name, metrics: [{ id: uid(), name: "Std", ct: 10 }] };
-    setDb((prev) => {
-      const next = { ...prev, sheets: [...prev.sheets, s] };
-      scheduleSave(next);
-      return next;
-    });
-    setSheetId(s.id);
-  };
-  const removeSheet = (sId) => {
-    setDb((prev) => {
-      const next = { ...prev, sheets: prev.sheets.filter((s) => s.id !== sId) };
-      scheduleSave(next);
-      if (sheetId === sId && next.sheets.length) setSheetId(next.sheets[0].id);
-      return next;
-    });
-  };
-  const updateSheetName = (sId, name) => {
-    setDb((prev) => {
-      const next = { ...prev, sheets: prev.sheets.map((s) => (s.id === sId ? { ...s, name } : s)) };
-      scheduleSave(next);
-      return next;
-    });
-  };
-  const addMetric = (sId) => {
-    setDb((prev) => {
-      const next = {
-        ...prev,
-        sheets: prev.sheets.map((s) =>
-          s.id === sId ? { ...s, metrics: [...s.metrics, { id: uid(), name: "Baru", ct: 10 }] } : s
-        ),
-      };
-      scheduleSave(next);
-      return next;
-    });
-  };
-  const updateMetric = (sId, mId, field, value) => {
-    setDb((prev) => {
-      const next = {
-        ...prev,
-        sheets: prev.sheets.map((s) => {
-          if (s.id !== sId) return s;
-          return {
-            ...s,
-            metrics: s.metrics.map((m) => (m.id === mId ? { ...m, [field]: field === "ct" ? Number(value) || 0 : value } : m)),
-          };
-        }),
-      };
-      scheduleSave(next);
-      return next;
-    });
-  };
-  const removeMetric = (sId, mId) => {
-    setDb((prev) => {
-      const next = {
-        ...prev,
-        sheets: prev.sheets.map((s) => (s.id === sId ? { ...s, metrics: s.metrics.filter((m) => m.id !== mId) } : s)),
-      };
-      scheduleSave(next);
-      return next;
-    });
-  };
-  const moveSheet = (sId, direction) => {
-    setDb((prev) => {
-      const arr = [...prev.sheets];
-      const idx = arr.findIndex((s) => s.id === sId);
-      const swapWith = idx + direction;
-      if (idx === -1 || swapWith < 0 || swapWith >= arr.length) return prev;
-      [arr[idx], arr[swapWith]] = [arr[swapWith], arr[idx]];
-      const next = { ...prev, sheets: arr };
-      scheduleSave(next);
-      return next;
-    });
+    createCsvExport(db, todayISO());
   };
 
+  const monthData = (db && db.months[mk]) || {};
+ const {
+  updateEntry,
+  updateNote,
+  clearEntry,
+  addSheet,
+  removeSheet,
+  updateSheetName,
+  addMetric,
+  updateMetric,
+  removeMetric,
+  moveSheet,
+} = useAppActions({
+  setDb,
+  setSheetId,
+  sheetId,
+  mk,
+  scheduleSave,
+});
   if (!ready || (!db && !loadError)) {
     return (
-      <div style={{ background: C.bg, color: C.text, height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Inter, sans-serif" }}>
+      <div
+        style={{
+          background: C.bg,
+          color: C.text,
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "Inter, sans-serif",
+        }}
+      >
         Memuat papan efisiensi…
       </div>
     );
@@ -571,22 +145,60 @@ const clearEntry = (sId, d) => {
 
   if (loadError) {
     return (
-      <div style={{ background: C.bg, color: C.text, height: "100vh", display: "flex", flexDirection: "column", gap: 10, alignItems: "center", justifyContent: "center", fontFamily: "Inter, sans-serif", padding: 24, textAlign: "center" }}>
-        <AlertTriangle color={C.bad} size={28} />
+      <div
+        style={{
+          background: C.bg,
+          color: C.text,
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "Inter, sans-serif",
+          padding: 24,
+          textAlign: "center",
+        }}
+      >
+        <AlertTriangle
+          color={C.bad}
+          size={28}
+        />
+
         <div>{loadError}</div>
       </div>
     );
   }
 
   const sheets = db.sheets;
-  const currentSheet = sheets.find((s) => s.id === sheetId) || sheets[0];
+
+  const currentSheet =
+    sheets.find((s) => s.id === sheetId) ||
+    sheets[0];
 
   return (
-    <div style={{ background: C.bg, minHeight: "100vh", color: C.text, fontFamily: "'Inter', sans-serif", paddingBottom: 24 }}>
+    <div
+      style={{
+        background: C.bg,
+        minHeight: "100vh",
+        color: C.text,
+        fontFamily: "'Inter', sans-serif",
+        paddingBottom: 24,
+      }}
+    >
       <GlobalStyle />
-      <TopBar view={view} setView={setView} saveState={saveState} />
-  
-      <SheetTabs sheets={sheets} sheetId={sheetId} setSheetId={setSheetId} />
+
+      <TopBar
+        view={view}
+        setView={setView}
+        saveState={saveState}
+      />
+
+      <SheetTabs
+        sheets={sheets}
+        sheetId={sheetId}
+        setSheetId={setSheetId}
+      />
 
       {view === "input" && (
         <InputView
@@ -599,17 +211,19 @@ const clearEntry = (sId, d) => {
           clearEntry={clearEntry}
         />
       )}
+
       {view === "dashboard" && (
-<DashboardView
-  sheets={sheets}
-  sheetId={sheetId}
-  setSheetId={setSheetId}
-  mk={mk}
-  setDate={setDate}
-  monthData={monthData}
-  exportDbCsv={exportDbCsv}
-/>
+        <DashboardView
+          sheets={sheets}
+          sheetId={sheetId}
+          setSheetId={setSheetId}
+          mk={mk}
+          setDate={setDate}
+          monthData={monthData}
+          exportDbCsv={exportDbCsv}
+        />
       )}
+
       {view === "settings" && (
         <SettingsView
           sheets={sheets}
@@ -622,954 +236,6 @@ const clearEntry = (sId, d) => {
           moveSheet={moveSheet}
         />
       )}
-    </div>
-  );
-}
-
-/* -------------------------------- global style -------------------------------- */
-function GlobalStyle() {
-  return (
-    <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
-      * { box-sizing: border-box; }
-      body { margin:0; }
-      input[type=date] { color-scheme: dark; }
-      .num-field {
-        font-family: 'IBM Plex Mono', monospace;
-        font-variant-numeric: tabular-nums;
-      }
-      /* ATURAN BARU: Mengubah background menjadi hijau transparan 50% saat input dipilih */
-      .num-field-input:focus {
-      
-        background-color: rgba(73, 185, 107, 0.5) !important;
-        border-color: #49B96B !important;
-      }
-  .note-field:focus {
-  border-color: #49B96B !important;
-  background-color: rgba(73, 185, 107, 0.08) !important;
-  box-shadow: 0 0 0 2px rgba(73, 185, 107, 0.18) !important;
-}
-      button:hover{
-    transform:translateY(-2px);
-    transition:.2s;
-}
-
-button:active{
-    transform:scale(.96);
-}
-/* Scrollbar global */
-::-webkit-scrollbar {
-  height: 6px;
-  width: 6px;
-  background: transparent;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: ${C.line};
-  border-radius: 6px;
-}
-
-
-/* =========================================
-   SCROLLBAR KHUSUS KATEGORI / SHEET TABS
-   ========================================= */
-
-.sheet-tabs-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: ${C.line} transparent;
-}
-
-/* Chrome / Edge / Safari */
-.sheet-tabs-scroll::-webkit-scrollbar {
-  height: 6px;
-  background: transparent;
-}
-
-.sheet-tabs-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.sheet-tabs-scroll::-webkit-scrollbar-thumb {
-  background: ${C.line};
-  border-radius: 6px;
-}
-
-/* Saat pointer masuk ke area kategori */
-.sheet-tabs-scroll:hover {
-  scrollbar-width: auto;
-  scrollbar-color: #777 transparent;
-}
-
-.sheet-tabs-scroll:hover::-webkit-scrollbar {
-  height: 12px;
-}
-
-.sheet-tabs-scroll:hover::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.sheet-tabs-scroll:hover::-webkit-scrollbar-thumb {
-  background: #777;
-  border-radius: 8px;
-}
-
-/* Saat pointer tepat di atas scrollbar */
-.sheet-tabs-scroll::-webkit-scrollbar-thumb:hover {
-  background: #aaa;
-}
-      @media print {
-        .no-print { display: none !important; }
-        body, .print-area { background: #fff !important; color: #111 !important; }
-        .print-area * { color: #111 !important; }
-        .print-card { border: 1px solid #ccc !important; background: #fff !important; }
-      }
-    `}</style>
-  );
-}
-
-       
-/* --------------------------------- sheet tabs ---------------------------------- */
-function SheetTabs({ sheets, sheetId, setSheetId }) {
-  return (
-    <div
-      className="no-print sheet-tabs-scroll"
-      style={{
-        display: "flex",
-        gap: 8,
-        overflowX: "auto",
-        padding: "12px 20px",
-        borderBottom: `1px solid ${C.line}`,
-      }}
-    >
-      {sheets.map((s) => {
-        const active = s.id === sheetId;
-
-        return (
-          <button
-            key={s.id}
-            onClick={() => setSheetId(s.id)}
-            style={{
-              flexShrink: 0,
-              padding: "7px 14px",
-              borderRadius: 999,
-              fontSize: 13,
-              fontWeight: 600,
-              border: `1px solid ${active ? C.amber : C.line}`,
-              background: active
-                ? "rgba(242,169,59,0.12)"
-                : C.panel,
-              color: active ? C.amber : C.text,
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {s.name}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-/* ---------------------------------- input view --------------------------------- */
-function InputView({ sheet, date, setDate, monthData, updateEntry, updateNote, clearEntry }) {
-  const mk = monthKeyOf(date);
-  const dim = daysInMonth(mk);
-  const entry = (monthData[sheet.id] && monthData[sheet.id][date]) || {};
-  const note = typeof entry.note === "string" ? entry.note : "";
-
-  const rows = sheet.metrics.map((m) => {
-    const v = entry[m.id] || {};
-    const qs = qtyStd(v.menit, m.ct);
-    const pct = pctAct(v.pcs, qs);
-    return { ...m, pcs: v.pcs || "", menit: v.menit || "", qs, pct };
-  });
-
-  const totalMenitHariIni = rows.reduce((a, r) => a + (Number(r.menit) || 0), 0);
-  const validRows = rows.filter((r) => r.pct !== null);
-  const avgPct = validRows.length ? validRows.reduce((a, r) => a + r.pct, 0) / validRows.length : null;
-
-  const filledDays = Object.keys(monthData[sheet.id] || {})
-    .filter((d) => {
-      const dayEntry = monthData[sheet.id][d] || {};
-      return sheet.metrics.some((m) => {
-        const value = dayEntry[m.id];
-        return value && (
-          value.pcs !== undefined ||
-          value.menit !== undefined
-        );
-      });
-    })
-    .sort();
-
-  const shiftDate = (delta) => {
-    const d = new Date(date + "T00:00:00");
-    d.setDate(d.getDate() + delta);
-    setDate(`${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`);
-  };
-
-  return (
-    <div style={{ padding: "20px", maxWidth: 720, margin: "0 auto" }}>
-      {/* date nav */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
-        <button
-              title="Tanggal Sebelumnya"
-                onClick={() => shiftDate(-1)}
-                  style={inputIconBtnStyle}><ChevronLeft size={18} /></button>
-        <div style={{ flex: 1, position: "relative" }}>
-          <Calendar size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: C.muted }} />
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            style={{
-              width: "100%", background: C.panel, border: `1px solid ${C.amber}`, borderRadius: 10,
-              padding: "10px 12px 10px 34px", color: C.text, fontSize: 14, fontFamily: "'IBM Plex Mono', monospace",
-            }}
-          />
-        </div>
-        <button
-            title="Tanggal Berikutnya"
-              onClick={() => shiftDate(1)}
-            style={inputIconBtnStyle}><ChevronRight size={18} /></button>
-
-      <button
-  onClick={() => setDate(todayISO())}
-  title="Hari Ini"
-  style={{
-    background: C.panel,
-    border: `1px solid ${C.amber}`,
-    color: C.text,
-    borderRadius: 10,
-    minWidth: 105,
-    height: 44,
-    padding: "0 14px",
-    cursor: "pointer",
-    fontWeight: 600,
-    fontSize: 13,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    transition: "all .2s ease",
-  }}
->
-  <CalendarCheck
-    size={18}
-    color={C.amber}
-    strokeWidth={2.2}
-  />
-  <span>Hari Ini</span>
-</button>
-       </div>     
-   
-
-      {/* CATATAN HARIAN — hanya tersedia di menu Input */}
-      <div
-        style={{
-          background: C.panel,
-          border: `1px solid ${C.line}`,
-          borderRadius: 12,
-          padding: 14,
-          marginBottom: 18,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 11,
-            color: C.muted,
-            textTransform: "uppercase",
-            letterSpacing: 0.6,
-            marginBottom: 7,
-            fontWeight: 600,
-          }}
-        >
-          Catatan Hari Ini
-        </div>
-
-       <textarea
-          className="note-field"
-          value={note}
-          onChange={(e) => updateNote(sheet.id, date, e.target.value)}
-          placeholder="Tulis problem, kendala, downtime, atau kejadian penting hari ini..."
-          rows={4}
-          style={{
-            width: "100%",
-            resize: "vertical",
-            minHeight: 92,
-            background: C.panel2,
-            border: `1px solid ${C.line}`,
-            borderRadius: 8,
-            padding: "10px 12px",
-            color: C.text,
-            fontSize: 13,
-            lineHeight: 1.5,
-            fontFamily: "'Inter', sans-serif",
-            outline: "none",
-          }}
-        />
-
-        <div
-          style={{
-            marginTop: 6,
-            fontSize: 10.5,
-            color: C.muted,
-          }}
-        >
-          Tersimpan otomatis setelah perubahan.
-        </div>
-      </div>
-
-      {/* SUMMARY STRIP — URUTAN BARU: RATA-RATA % DI KIRI, TOTAL MENIT DI TENGAH */}
-      <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
-        {/* KARTU 1: Rata-rata % (Paling Kiri) */}
-        <div style={inputSummaryCardStyle}>
-          <div style={inputSummaryLabelStyle}>Rata-rata %</div>
-          <div className="num-field" style={{ fontSize: 20, fontWeight: 600, color: statusColor(avgPct) }}>
-            {avgPct === null ? "—" : `${avgPct.toFixed(0)}%`}
-          </div>
-        </div>
-
-        {/* KARTU 2: Total Menit (Di Tengah) */}
-        <div style={inputSummaryCardStyle}>
-          <div style={inputSummaryLabelStyle}>Total Menit</div>
-          <div className="num-field" style={{ fontSize: 20, fontWeight: 600, color: C.steel }}>
-            {totalMenitHariIni.toLocaleString("id-ID")} m
-          </div>
-        </div>
-
-        {/* KARTU 3: Tombol Bersihkan (Paling Kanan) */}
-        <button
-          onClick={() => { if (Object.keys(entry).length && confirm("Hapus semua data tanggal ini untuk line ini?")) clearEntry(sheet.id, date); }}
-          style={{ background: "transparent", border: `1px solid ${C.line}`, borderRadius: 10, padding: "0 14px", color: C.muted, cursor: "pointer", fontSize: 12.5, display: "flex", alignItems: "center", gap: 6 }}
-        >
-          <Trash2 size={13} /> Bersihkan
-        </button>
-      </div>
-
-      {/* Kumpulan kartu metrik */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {rows.map((r) => (
-          <MetricCard key={r.id} sheetId={sheet.id} date={date} metric={r} updateEntry={updateEntry} />
-        ))}
-      </div>
-
-      {/* quick nav of filled days */}
-      {filledDays.length > 0 && (
-        <div style={{ marginTop: 26 }}>
-          <div style={{ fontSize: 11.5, color: C.muted, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.6 }}>
-            Tanggal terisi bulan ini
-          </div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {filledDays.map((d) => {
-              const dayEntry = monthData[sheet.id][d];
-              const pcts = sheet.metrics.map((m) => {
-                const v = dayEntry[m.id];
-                if (!v) return null;
-                return pctAct(v.pcs, qtyStd(v.menit, m.ct));
-              }).filter((p) => p !== null);
-              const avg = pcts.length ? pcts.reduce((a, b) => a + b, 0) / pcts.length : null;
-              return (
-                <button
-                  key={d}
-                  onClick={() => setDate(d)}
-                  style={{
-                    padding: "6px 10px", borderRadius: 8, fontSize: 12, cursor: "pointer",
-                    border: `1px solid ${d === date ? C.amber : C.line}`,
-                    background: d === date ? "rgba(242,169,59,0.12)" : C.panel,
-                    color: C.text, fontFamily: "'IBM Plex Mono', monospace", display: "flex", alignItems: "center", gap: 6,
-                  }}
-                >
-                  {d.slice(8)}
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: statusColor(avg), display: "inline-block" }} />
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ---------------------------------- metric card --------------------------------- */
-function MetricCard({ sheetId, date, metric, updateEntry }) {
-  const actualCt =
-    Number(metric.pcs) > 0
-      ? Number(metric.menit || 0) / Number(metric.pcs)
-      : null;
-
-  const handleArrowNavigation = (event) => {
-    const navigationKeys = [
-      "ArrowUp",
-      "ArrowDown",
-      "ArrowLeft",
-      "ArrowRight",
-    ];
-
-    if (!navigationKeys.includes(event.key)) return;
-
-    // Urutan input:
-    // PCS 1 → Menit 1 → PCS 2 → Menit 2 → PCS 3 → Menit 3 → ...
-    const inputs = Array.from(
-      document.querySelectorAll(".num-field-input")
-    );
-
-    const currentInput = event.currentTarget;
-    const currentIndex = inputs.indexOf(currentInput);
-
-    if (currentIndex === -1) return;
-
-    let targetIndex;
-
-    if (event.key === "ArrowLeft") {
-      targetIndex = currentIndex - 1;
-    } else if (event.key === "ArrowRight") {
-      targetIndex = currentIndex + 1;
-    } else if (event.key === "ArrowUp") {
-      targetIndex = currentIndex - 2;
-    } else if (event.key === "ArrowDown") {
-      targetIndex = currentIndex + 2;
-    }
-
-    if (
-      targetIndex < 0 ||
-      targetIndex >= inputs.length ||
-      !inputs[targetIndex]
-    ) {
-      return;
-    }
-
-    event.preventDefault();
-
-    const target = inputs[targetIndex];
-    target.focus();
-    target.select();
-  };
-
-  return (
-    <div
-      style={{
-        background: C.panel,
-        border: `1px solid ${C.amber}`,
-        borderRadius: 16,
-        padding: "22px 26px 24px",
-        boxShadow: "0 2px 8px rgba(0,0,0,.10)",
-      }}
-    >
-      {/* HEADER KARTU */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 10,
-          marginBottom: 12,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 22,
-            fontWeight: 700,
-            color: C.text,
-            lineHeight: 1.1,
-          }}
-        >
-          {metric.name}
-          <span
-            style={{
-              color: C.muted,
-              fontSize: 14,
-              fontWeight: 500,
-              marginLeft: 7,
-            }}
-          >
-            • CT {Number(metric.ct || 0).toFixed(2)}s
-          </span>
-        </div>
-
-        <div
-          className="num-field"
-          style={{
-            color: C.steel,
-            fontSize: 14,
-            fontWeight: 700,
-            whiteSpace: "nowrap",
-          }}
-        >
-          {actualCt !== null ? `${actualCt.toFixed(3)} min/pcs` : "—"}
-        </div>
-      </div>
-
-      {/* INPUT + STD PCS */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.2fr 0.8fr 0.65fr",
-          gap: 12,
-          alignItems: "end",
-        }}
-      >
-        {/* PCS */}
-        <div>
-          <label
-            style={{
-              display: "block",
-              color: C.muted,
-              fontSize: 14,
-              marginBottom: 8,
-            }}
-          >
-            ACT Pcs (Total)
-          </label>
-
-          <input
-            className="num-field num-field-input"
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={metric.pcs}
-            onChange={(e) =>
-              updateEntry(
-                sheetId,
-                date,
-                metric.id,
-                "pcs",
-                e.target.value
-              )
-            }
-            onKeyDown={handleArrowNavigation}
-            style={{
-              width: "100%",
-              height: 52,
-              background: C.panel2,
-              border: `1px solid ${C.line}`,
-              borderRadius: 12,
-              padding: "0 16px",
-              color: C.text,
-              fontSize: 18,
-              fontWeight: 600,
-              outline: "none",
-            }}
-          />
-        </div>
-
-        {/* MENIT */}
-        <div>
-          <label
-            style={{
-              display: "block",
-              color: C.muted,
-              fontSize: 14,
-              marginBottom: 8,
-            }}
-          >
-            ACT Min (Menit)
-          </label>
-
-          <input
-            className="num-field num-field-input"
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={metric.menit}
-            onChange={(e) =>
-              updateEntry(
-                sheetId,
-                date,
-                metric.id,
-                "menit",
-                e.target.value
-              )
-            }
-            onKeyDown={handleArrowNavigation}
-            style={{
-              width: "100%",
-              height: 52,
-              background: C.panel2,
-              border: `1px solid ${C.line}`,
-              borderRadius: 12,
-              padding: "0 16px",
-              color: C.text,
-              fontSize: 18,
-              fontWeight: 600,
-              outline: "none",
-            }}
-          />
-        </div>
-
-        {/* STD PCS */}
-        <div>
-          <label
-            style={{
-              display: "block",
-              color: C.muted,
-              fontSize: 14,
-              marginBottom: 8,
-            }}
-          >
-            STD Pcs
-          </label>
-
-          <div
-            className="num-field"
-            style={{
-              height: 52,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              color: metric.qs ? C.text : C.muted,
-              fontSize: 18,
-              fontWeight: 700,
-              padding: "0 8px",
-            }}
-          >
-            {metric.qs || "—"}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* Styles internal untuk mencegah error scope global */
-const inputIconBtnStyle = {
-  background: C.amber,
-  border: "none",
-  borderRadius: 10,
-  width: 44,
-  height: 44,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  color: "#1A1D20",
-  cursor: "pointer",
-  fontWeight: 700,
-  transition: "all .2s ease",
-  boxShadow: "0 3px 10px rgba(242,169,59,.30)"
-};
-const inputSummaryCardStyle = { flex: 1, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px" };
-const inputSummaryLabelStyle = { fontSize: 10.5, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6 };
-
-/* --------------------------------- settings view -------------------------------- */
-function SettingsView({ sheets, addSheet, removeSheet, updateSheetName, addMetric, updateMetric, removeMetric, moveSheet }) {
-  const [newSheetName, setNewSheetName] = useState("");
-  return (
-    <div style={{ padding: "20px", maxWidth: 720, margin: "0 auto" }}>
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        <input
-          placeholder="Nama line baru..."
-          value={newSheetName}
-          onChange={(e) => setNewSheetName(e.target.value)}
-          style={{ flex: 1, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px", color: C.text, fontSize: 14 }}
-        />
-        <button
-          onClick={() => { if (newSheetName.trim()) { addSheet(newSheetName.trim()); setNewSheetName(""); } }}
-          style={{ background: C.amber, color: "#1A1D20", border: "none", borderRadius: 10, padding: "0 16px", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
-        >
-          <Plus size={16} /> Tambah
-        </button>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {sheets.map((s, idx) => (
-          <div key={s.id} style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, padding: 14 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              {/* Reordering buttons built inside the line configuration card */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <button
-                  disabled={idx === 0}
-                  onClick={() => moveSheet(s.id, -1)}
-                  style={{ background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 4, width: 28, height: 24, display: "flex", alignItems: "center", justifyContent: "center", color: idx === 0 ? C.muted : C.text, cursor: idx === 0 ? "not-allowed" : "pointer" }}
-                >
-                  <ChevronUp size={14} />
-                </button>
-                <button
-                  disabled={idx === sheets.length - 1}
-                  onClick={() => moveSheet(s.id, 1)}
-                  style={{ background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 4, width: 28, height: 24, display: "flex", alignItems: "center", justifyContent: "center", color: idx === sheets.length - 1 ? C.muted : C.text, cursor: idx === sheets.length - 1 ? "not-allowed" : "pointer" }}
-                >
-                  <ChevronDown size={14} />
-                </button>
-              </div>
-
-              <input
-                value={s.name}
-                onChange={(e) => updateSheetName(s.id, e.target.value)}
-                style={{ flex: 1, background: "transparent", border: "none", borderBottom: `1px dashed ${C.line}`, color: C.text, fontSize: 15, fontWeight: 600, padding: "4px 0" }}
-              />
-              <button
-                onClick={() => { if (confirm(`Hapus line "${s.name}" beserta semua datanya secara permanen?`)) removeSheet(s.id); }}
-                style={{ background: "transparent", border: "none", color: C.muted, cursor: "pointer", padding: 6 }}
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingLeft: 36 }}>
-              {s.metrics.map((m) => (
-                <div key={m.id} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <input
-                    value={m.name}
-                    onChange={(e) => updateMetric(s.id, m.id, "name", e.target.value)}
-                    style={{ flex: 2, background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 6, padding: "6px 10px", color: C.text, fontSize: 13 }}
-                  />
-                  <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 4 }}>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={m.ct}
-                      onChange={(e) => updateMetric(s.id, m.id, "ct", e.target.value)}
-                      style={{ width: "100%", background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 6, padding: "6px 10px", color: C.text, fontSize: 13, textAlign: "right" }}
-                    />
-                    <span style={{ fontSize: 12, color: C.muted }}>s</span>
-                  </div>
-                  {s.metrics.length > 1 && (
-                    <button
-                      onClick={() => removeMetric(s.id, m.id)}
-                      style={{ background: "transparent", border: "none", color: C.bad, cursor: "pointer", padding: 4 }}
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button
-                onClick={() => addMetric(s.id)}
-                style={{ alignSelf: "flex-start", background: "transparent", border: `1px dashed ${C.line}`, borderRadius: 6, padding: "4px 10px", fontSize: 12, color: C.muted, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}
-              >
-                <Plus size={12} /> Tambah Jenis/Varian (CT)
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* -------------------------------- dashboard view -------------------------------- */
-function DashboardView({
-  sheets,
-  sheetId,
-  setSheetId,
-  mk,
-  setDate,
-  monthData,
-  exportDbCsv,
-}) {
-  const sheet = sheets.find((s) => s.id === sheetId) || sheets[0];
-  const dim = daysInMonth(mk);
-  const sheetData = monthData[sheet.id] || {};
-
-  const dailyRows = [];
-  for (let d = 1; d <= dim; d++) {
-    const iso = `${mk}-${pad2(d)}`;
-    const dayEntry = sheetData[iso];
-    if (!dayEntry) { 
-      dailyRows.push({ day: d, iso, pcs: 0, menit: 0, pct: null, hasData: false }); 
-      continue; 
-    }
-    
-    let pcsSum = 0;
-    let menitSum = 0;
-    let pctList = [];
-    
-    sheet.metrics.forEach((m) => {
-      const v = dayEntry[m.id];
-      if (!v) return;
-      pcsSum += Number(v.pcs) || 0;
-      menitSum += Number(v.menit) || 0;
-      const p = pctAct(v.pcs, qtyStd(v.menit, m.ct));
-      if (p !== null) pctList.push(p);
-    });
-    
-    const avg = pctList.length ? pctList.reduce((a, b) => a + b, 0) / pctList.length : null;
-    dailyRows.push({ day: d, iso, pcs: pcsSum, menit: menitSum, pct: avg, hasData: true });
-  }
-
-  const withData = dailyRows.filter((r) => r.hasData);
-  const totalPcs = withData.reduce((a, r) => a + r.pcs, 0);
-  const totalMenitAll = withData.reduce((a, r) => a + r.menit, 0);
-  const avgPct = withData.length ? withData.reduce((a, r) => a + (r.pct || 0), 0) / withData.length : null;
-  const best = withData.length ? withData.reduce((a, r) => (r.pct > a.pct ? r : a)) : null;
-
-  const chartData = dailyRows.map((r) => ({ 
-    name: String(r.day), 
-    pct: r.pct === null ? 0 : Math.round(r.pct)
-  }));
-
-  const monthOptions = useMemo(() => {
-    const options = [];
-    const current = new Date(mk + "-01T00:00:00");
-    for (let i = -4; i <= 2; i++) {
-      const d = new Date(current.getFullYear(), current.getMonth() + i, 1);
-      const k = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
-      options.push({ key: k, label: d.toLocaleDateString("id-ID", { month: "long", year: "numeric" }) });
-    }
-    return options;
-  }, [mk]);
-
-  return (
-    <div className="print-area" style={{ padding: 20, maxWidth: 960, margin: "0 auto" }}>
-      {/* Kontrol Navigasi Atas */}
-      <div className="no-print" style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 18, flexWrap: "wrap" }}>
-        <select
-          value={sheetId}
-          onChange={(e) => setSheetId(e.target.value)}
-          style={{ background: C.panel, color: C.text, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 12px", fontSize: 13, outline: "none" }}
-        >
-          {sheets.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </select>
-
-        <select
-          value={mk}
-          onChange={(e) => setDate(`${e.target.value}-01`)}
-          style={{ background: C.panel, color: C.amber, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 12px", fontSize: 13, fontWeight: 600, outline: "none" }}
-        >
-          {monthOptions.map((opt) => <option key={opt.key} value={opt.key}>{opt.label}</option>)}
-        </select>
-
-        <div
-    style={{
-        marginLeft: "auto",
-        display: "flex",
-        gap: 10,
-        width: "100%",
-        justifyContent: "flex-end",
-        flexWrap: "wrap",
-    }}
->
-
-<button
-  onClick={exportDbCsv}
-  style={{
-    flex: 1,
-    maxWidth: 180,
-    background: "#16A34A",
-    color: "#fff",
-    border: "none",
-    borderRadius: 10,
-    padding: "10px 16px",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-    cursor: "pointer",
-    fontWeight: 700,
-    fontSize: 14,
-  }}
->
-  <FileSpreadsheet size={18} />
-  <span>Export CSV</span>
-</button>
-
-<button
-    onClick={() => window.print()}
-    style={{
-        flex:1,
-        maxWidth:180,
-        background:C.amber,
-        color:"#1A1D20",
-        border:"none",
-        borderRadius:10,
-        padding:"10px 16px",
-        display:"flex",
-        alignItems:"center",
-        justifyContent:"center",
-        gap:8,
-        cursor:"pointer",
-        fontWeight:700,
-        fontSize:14,
-    }}
->
-
-<Printer size={18}/>
-
-Cetak
-
-</button>
-
-</div>
-      </div>
-
-      <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: 24, marginBottom: 4 }}>
-        {sheet.name}
-      </div>
-      <div style={{ color: C.muted, fontSize: 13, marginBottom: 18 }}>{monthLabel(mk)} · Rekapitulasi Data harian</div>
-
-      {/* 1. TABEL DETAIL: (Tgl, %ACT, Total Menit, Total PCS) */}
-      <div className="print-card" style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, overflow: "hidden", marginBottom: 24 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-          <thead>
-            <tr style={{ background: C.panel2, textAlign: "left" }}>
-              <th style={dashTh}>Tgl</th>
-              <th style={dashTh}>%ACT</th>
-              <th style={dashTh}>Total Menit</th>
-              <th style={dashTh}>Total PCS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dailyRows.map((r) => (
-              <tr key={r.iso} onClick={() => setDate(r.iso)} style={{ borderTop: `1px solid ${C.line}`, cursor: "pointer" }} className="no-print-hover">
-                <td style={dashTd}>{r.day}</td>
-                <td style={{ ...dashTd, color: statusColor(r.pct), fontWeight: 600 }} className="num-field">
-                  {r.pct === null ? "–" : `${r.pct.toFixed(0)}%`}
-                </td>
-                <td className="num-field" style={{ ...dashTd, color: r.hasData ? C.steel : C.muted, fontWeight: 600 }}>{r.hasData ? `${r.menit} m` : "–"}</td>
-                <td className="num-field" style={{ ...dashTd, color: C.muted }}>{r.hasData ? r.pcs.toLocaleString("id-ID") : "–"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <hr style={{ border: "none", borderBottom: `1px dashed ${C.line}`, marginBottom: 24 }} className="no-print" />
-
-      {/* 2. KARTU RINGKASAN STATISTIK */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px,1fr))", gap: 10, marginBottom: 22 }}>
-        <StatCard label="Total PCS" value={totalPcs.toLocaleString("id-ID")} />
-        <StatCard label="Total Menit" value={`${totalMenitAll.toLocaleString("id-ID")} m`} color={C.steel} />
-        <StatCard label="Rata-rata %ACT" value={avgPct === null ? "—" : `${avgPct.toFixed(1)}%`} color={statusColor(avgPct)} />
-        <StatCard label="Hari terbaik" value={best ? `Tgl ${best.day} · ${best.pct.toFixed(0)}%` : "—"} icon={TrendingUp} color={C.good} />
-      </div>
-
-      {/* 3. GRAFIK TREN: Hanya menampilkan persentase efisiensi saja */}
-      <div className="print-card" style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 12, padding: "16px 10px", height: 220 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 4, right: 10, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={C.line} vertical={false} />
-            <XAxis dataKey="name" tick={{ fill: C.muted, fontSize: 10 }} axisLine={{ stroke: C.line }} tickLine={false} />
-            <YAxis tick={{ fill: C.muted, fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 120]} />
-            <Tooltip 
-              contentStyle={{ background: C.panel2, border: `1px solid ${C.line}`, borderRadius: 8, fontSize: 12 }} 
-              labelFormatter={(l) => `Tanggal ${l}`} 
-              formatter={(v) => [`${v}%`, "%ACT"]} 
-            />
-            <ReferenceLine y={100} stroke={C.muted} strokeDasharray="4 4" />
-            <Bar dataKey="pct" radius={[4, 4, 0, 0]}>
-              {chartData.map((d, i) => <Cell key={i} fill={statusColor(d.pct || null)} opacity={d.pct ? 1 : 0.15} />)}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
-}
-
-const dashTh = { padding: "9px 14px", fontSize: 11, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, fontWeight: 600 };
-const dashTd = { padding: "8px 14px" };
-
-function StatCard({ label, value, color, icon: Icon }) {
-  return (
-    <div className="print-card" style={{ background: C.panel, border: `1px solid ${C.line}`, borderRadius: 10, padding: 14 }}>
-      <div style={{ fontSize: 10.5, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6, display: "flex", alignItems: "center", gap: 5 }}>
-        {Icon && <Icon size={12} />} {label}
-      </div>
-      <div className="num-field" style={{ fontSize: 18, fontWeight: 700, color: color || C.text }}>{value}</div>
     </div>
   );
 }
