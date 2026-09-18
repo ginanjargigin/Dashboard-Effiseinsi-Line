@@ -199,10 +199,10 @@ export default function InputView({
           title="Tanggal Berikutnya"
           onClick={() => shiftDate(1)}
           style={inputIconBtnStyle}
-            ...inputIconBtnStyle,
+          > ...inputIconBtnStyle,
             flex: "0 0 44px",
           }}
-        >
+          >
           <ChevronRight size={18} />
         </button>
 
