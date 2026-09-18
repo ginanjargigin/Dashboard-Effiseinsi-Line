@@ -4,6 +4,49 @@ export default function GlobalStyle() {
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
             :root {
+/* =========================================
+   THEME: MIDNIGHT CYAN
+   ========================================= */
+
+[data-theme="midnight"] {
+  --color-bg: #0B1220;
+  --color-panel: #111B2D;
+  --color-panel-2: #17243A;
+  --color-line: #2B3B50;
+
+  --color-accent: #38BDF8;
+  --color-accent-soft: rgba(56, 189, 248, 0.12);
+  --color-accent-focus: rgba(56, 189, 248, 0.18);
+  --color-accent-shadow: rgba(56, 189, 248, 0.30);
+
+  --color-steel: #7DD3FC;
+
+  --color-text: #E6F4FF;
+  --color-muted: #94A9BD;
+}
+
+
+/* =========================================
+   THEME: LIGHT CORPORATE
+   ========================================= */
+
+[data-theme="light"] {
+  --color-bg: #F3F5F7;
+  --color-panel: #FFFFFF;
+  --color-panel-2: #EEF1F4;
+  --color-line: #D8DEE5;
+
+  --color-accent: #2563EB;
+  --color-accent-soft: rgba(37, 99, 235, 0.10);
+  --color-accent-focus: rgba(37, 99, 235, 0.16);
+  --color-accent-shadow: rgba(37, 99, 235, 0.22);
+
+  --color-steel: #47718F;
+
+  --color-text: #18212B;
+  --color-muted: #687481;
+}
+            
         --color-bg: #1A1D20;
         --color-panel: #232729;
         --color-panel-2: #2B3033;
@@ -20,7 +63,14 @@ export default function GlobalStyle() {
         --color-muted: #8C949A;
 }
       * { box-sizing: border-box; }
-      body { margin:0; }
+            body {
+        margin: 0;
+        background: var(--color-bg);
+        color: var(--color-text);
+        transition:
+          background-color 0.25s ease,
+          color 0.25s ease;
+      }
       input[type=date] { color-scheme: dark; }
       .num-field {
         font-family: 'IBM Plex Mono', monospace;
