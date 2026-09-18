@@ -55,7 +55,6 @@ export default function App() {
     );
   }, [theme]);
 
-  const mk = monthKeyOf(date);
 
   const mk = monthKeyOf(date);
 
