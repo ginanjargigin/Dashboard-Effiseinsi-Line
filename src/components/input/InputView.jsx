@@ -198,8 +198,8 @@ export default function InputView({
         <button
           title="Tanggal Berikutnya"
           onClick={() => shiftDate(1)}
-          style={inputIconBtnStyle}
-          > ...inputIconBtnStyle,
+          style={{inputIconBtnStyle,
+             ...inputIconBtnStyle,
             flex: "0 0 44px",
           }}
           >
@@ -219,7 +219,7 @@ export default function InputView({
               height: 44,
               padding: "0 14px",
               cursor: "pointer",
-              ...
+              
             }}
         >
           <CalendarCheck
