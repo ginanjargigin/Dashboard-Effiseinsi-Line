@@ -36,9 +36,26 @@ export default function App() {
   const [sheetId, setSheetId] = useState(null);
   const [date, setDate] = useState(todayISO());
   const [view, setView] = useState("input");
+   const [theme, setTheme] = useState(
+    () => localStorage.getItem("papan-theme") || "amber"
+  );
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState(null);
   const [saveState, setSaveState] = useState("idle");
+
+    useEffect(() => {
+    document.documentElement.setAttribute(
+      "data-theme",
+      theme
+    );
+
+    localStorage.setItem(
+      "papan-theme",
+      theme
+    );
+  }, [theme]);
+
+  const mk = monthKeyOf(date);
 
   const mk = monthKeyOf(date);
 
@@ -234,24 +251,11 @@ export default function App() {
           updateMetric={updateMetric}
           removeMetric={removeMetric}
           moveSheet={moveSheet}
+          theme={theme}
+          setTheme={setTheme}
         />
       )}
     </div>
   );
 }
 
-const [theme, setTheme] = useState(
-  () => localStorage.getItem("papan-theme") || "amber"
-);
-
-useEffect(() => {
-  document.documentElement.setAttribute(
-    "data-theme",
-    theme
-  );
-
-  localStorage.setItem(
-    "papan-theme",
-    theme
-  );
-}, [theme]);
