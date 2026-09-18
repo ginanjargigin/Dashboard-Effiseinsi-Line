@@ -147,7 +147,10 @@ export default function InputView({
         <button
           title="Tanggal Sebelumnya"
           onClick={() => shiftDate(-1)}
-          style={inputIconBtnStyle}
+          style={{
+              ...inputIconBtnStyle,
+              flex: "0 0 44px",
+          }}
         >
           <ChevronLeft size={18} />
         </button>
@@ -177,14 +180,17 @@ export default function InputView({
             onChange={(e) => setDate(e.target.value)}
             style={{
               width: "100%",
+              minWidth: 0,
+              maxWidth: "100%",
+              boxSizing: "border-box",
+              display: "block",
               background: "var(--color-input)",
               border: `1px solid ${C.amber}`,
               borderRadius: 10,
               padding: "10px 12px 10px 34px",
               color: C.text,
               fontSize: 14,
-              fontFamily:
-                "'IBM Plex Mono', monospace",
+              fontFamily: "'IBM Plex Mono', monospace",
             }}
           />
         </div>
@@ -193,6 +199,9 @@ export default function InputView({
           title="Tanggal Berikutnya"
           onClick={() => shiftDate(1)}
           style={inputIconBtnStyle}
+            ...inputIconBtnStyle,
+            flex: "0 0 44px",
+          }}
         >
           <ChevronRight size={18} />
         </button>
@@ -201,22 +210,17 @@ export default function InputView({
           onClick={() => setDate(todayISO())}
           title="Hari Ini"
           style={{
-            background: C.panel,
-            border: `1px solid ${C.amber}`,
-            color: C.text,
-            borderRadius: 10,
-            minWidth: 105,
-            height: 44,
-            padding: "0 14px",
-            cursor: "pointer",
-            fontWeight: 600,
-            fontSize: 13,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            transition: "all .2s ease",
-          }}
+              background: C.panel,
+              border: `1px solid ${C.amber}`,
+              color: C.text,
+              borderRadius: 10,
+              minWidth: 105,
+              flex: "0 0 105px",
+              height: 44,
+              padding: "0 14px",
+              cursor: "pointer",
+              ...
+            }}
         >
           <CalendarCheck
             size={18}
