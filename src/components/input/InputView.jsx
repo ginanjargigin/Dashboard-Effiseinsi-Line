@@ -184,6 +184,9 @@ export default function InputView({
               maxWidth: "100%",
               boxSizing: "border-box",
               display: "block",
+              WebkitAppearance: "none",
+              appearance: "none",
+              overflow: "hidden",
               background: "var(--color-input)",
               border: `1px solid ${C.amber}`,
               borderRadius: 10,
@@ -198,7 +201,7 @@ export default function InputView({
         <button
           title="Tanggal Berikutnya"
           onClick={() => shiftDate(1)}
-          style={{inputIconBtnStyle,
+          style={{
              ...inputIconBtnStyle,
             flex: "0 0 44px",
           }}
