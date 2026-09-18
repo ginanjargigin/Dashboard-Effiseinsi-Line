@@ -155,6 +155,7 @@ export default function InputView({
         <div
           style={{
             flex: 1,
+            minWidth: 0,
             position: "relative",
           }}
         >
