@@ -241,8 +241,8 @@ export default function InputView({
           background: C.panel,
           border: `1px solid ${C.line}`,
           borderRadius: 12,
-          padding: 14,
-          marginBottom: 18,
+          padding: 12,
+          marginBottom: 16,
         }}
       >
         <div
@@ -265,20 +265,22 @@ export default function InputView({
             updateNote(sheet.id, date, e.target.value)
           }
           placeholder="Tulis problem, kendala, downtime, atau kejadian penting hari ini..."
-          rows={4}
+          rows={3}
           style={{
             width: "100%",
             resize: "vertical",
-            minHeight: 92,
+            minHeight: 72,
+            maxHeight: 150,
             background: "var(--color-input)",
             border: `1px solid ${C.line}`,
             borderRadius: 8,
-            padding: "10px 12px",
+            padding: "9px 11px",
             color: C.text,
             fontSize: 13,
-            lineHeight: 1.5,
+            lineHeight: 1.45,
             fontFamily: "'Inter', sans-serif",
             outline: "none",
+            boxSizing: "border-box",
           }}
         />
 
