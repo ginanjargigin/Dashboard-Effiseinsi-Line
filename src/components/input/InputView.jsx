@@ -438,10 +438,10 @@ export default function InputView({
                     border: `1px solid ${
                       d === date ? C.amber : C.line
                     }`,
-                    background:
-                      d === date
-                        ? "rgba(242,169,59,0.12)"
-                        : C.panel,
+                   background:
+                     d === date
+                        ? "var(--color-accent-soft)"
+                        : C.panel
                     color: C.text,
                     fontFamily:
                       "'IBM Plex Mono', monospace",
