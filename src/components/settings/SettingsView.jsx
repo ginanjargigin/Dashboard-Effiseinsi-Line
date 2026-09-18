@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+
 import {
   Plus,
   Trash2,
@@ -7,6 +8,8 @@ import {
   ChevronDown,
   X,
 } from "lucide-react";
+
+import ThemeSelector from "./ThemeSelector";
 
 import { C } from "../../constants/appConstants";
 
@@ -19,10 +22,16 @@ export default function SettingsView({
   updateMetric,
   removeMetric,
   moveSheet,
+  theme,
+  setTheme,
 }) {
   const [newSheetName, setNewSheetName] = useState("");
 
   return (
+      <ThemeSelector
+    theme={theme}
+    setTheme={setTheme}
+  />
     <div
       style={{
         padding: "20px",
