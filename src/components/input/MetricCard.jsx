@@ -75,7 +75,7 @@ export default function MetricCard({
         width: "100%",
         boxSizing: "border-box",
 
-        boxShadow: "0 2px 6px rgba(0,0,0,.08)",
+        boxShadow: "0 2px 8px var(--color-card-shadow)",
       }}
     >
       {/* ==================================
@@ -234,7 +234,7 @@ export default function MetricCard({
 
               height: 38,
 
-              background: C.panel2,
+              background: "var(--color-input)",
 
               border: `1px solid ${C.line}`,
 
@@ -308,7 +308,7 @@ export default function MetricCard({
 
               height: 38,
 
-              background: C.panel2,
+              background: "var(--color-input)",
 
               border: `1px solid ${C.line}`,
 
