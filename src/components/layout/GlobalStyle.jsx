@@ -3,9 +3,7 @@ export default function GlobalStyle() {
   return (
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
-            :root {
-            
-  /* =========================================
+          /* =========================================
    THEME: FACTORY AMBER
    Default theme
    ========================================= */
