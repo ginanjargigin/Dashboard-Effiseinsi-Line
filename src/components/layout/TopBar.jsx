@@ -91,7 +91,9 @@ export default function TopBar({ view, setView, saveState }) {
                 borderRadius: 8,
                 cursor: "pointer",
                 background: active ? C.amber : "transparent",
-                color: active ? "#1A1D20" : C.muted,
+                color: active
+                  ? "var(--color-accent-text)"
+                  : C.muted,
                 fontWeight: 600,
                 fontSize: 13,
               }}
