@@ -1,12 +1,16 @@
 export const C = {
-  bg: "#1A1D20",
-  panel: "#232729",
-  panel2: "#2B3033",
-  line: "#383E42",
-  amber: "#F2A93B",
-  steel: "#6C93B0",
-  text: "#ECEEEF",
-  muted: "#8C949A",
+  bg: "var(--color-bg)",
+  panel: "var(--color-panel)",
+  panel2: "var(--color-panel-2)",
+  line: "var(--color-line)",
+
+  amber: "var(--color-accent)",
+  steel: "var(--color-steel)",
+
+  text: "var(--color-text)",
+  muted: "var(--color-muted)",
+
+  // Warna status produksi tetap independen dari tema
   good: "#49B96B",
   warn: "#F2A93B",
   bad: "#E5555C",
