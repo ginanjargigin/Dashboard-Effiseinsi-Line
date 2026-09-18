@@ -29,19 +29,21 @@ const inputIconBtnStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  color: "#1A1D20",
+  color: "var(--color-accent-text)",
   cursor: "pointer",
   fontWeight: 700,
   transition: "all .2s ease",
-  boxShadow: "0 3px 10px rgba(242,169,59,.30)",
+  boxShadow: "0 3px 10px var(--color-accent-shadow)",
 };
 
 const inputSummaryCardStyle = {
   flex: 1,
-  background: C.panel,
+  background:
+    "linear-gradient(135deg, var(--color-accent-soft), var(--color-panel))",
   border: `1px solid ${C.line}`,
   borderRadius: 10,
   padding: "10px 14px",
+  boxShadow: "0 2px 8px var(--color-card-shadow)",
 };
 
 const inputSummaryLabelStyle = {
@@ -174,7 +176,7 @@ export default function InputView({
             onChange={(e) => setDate(e.target.value)}
             style={{
               width: "100%",
-              background: C.panel,
+              background: "var(--color-input)",
               border: `1px solid ${C.amber}`,
               borderRadius: 10,
               padding: "10px 12px 10px 34px",
@@ -260,7 +262,7 @@ export default function InputView({
             width: "100%",
             resize: "vertical",
             minHeight: 92,
-            background: C.panel2,
+            background: "var(--color-input)",
             border: `1px solid ${C.line}`,
             borderRadius: 8,
             padding: "10px 12px",
