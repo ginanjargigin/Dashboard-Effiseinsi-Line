@@ -4,6 +4,7 @@ export default function GlobalStyle() {
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
             :root {
+            
   /* =========================================
    THEME: FACTORY AMBER
    Default theme
@@ -19,6 +20,11 @@ export default function GlobalStyle() {
   --color-accent-soft: rgba(242, 169, 59, 0.12);
   --color-accent-focus: rgba(242, 169, 59, 0.18);
   --color-accent-shadow: rgba(242, 169, 59, 0.30);
+
+  --color-input: #2B3033;
+  --color-card-shadow: rgba(0, 0, 0, 0.20);
+  --color-accent-text: #1A1D20;
+  --color-hover: rgba(255, 255, 255, 0.04);
 
   --color-steel: #6C93B0;
 
@@ -42,6 +48,11 @@ export default function GlobalStyle() {
   --color-accent-focus: rgba(56, 189, 248, 0.18);
   --color-accent-shadow: rgba(56, 189, 248, 0.30);
 
+  --color-input: #17243A;
+  --color-card-shadow: rgba(0, 0, 0, 0.35);
+  --color-accent-text: #06131A;
+  --color-hover: rgba(125, 211, 252, 0.06);
+
   --color-steel: #7DD3FC;
 
   --color-text: #E6F4FF;
@@ -63,6 +74,11 @@ export default function GlobalStyle() {
   --color-accent-soft: rgba(37, 99, 235, 0.10);
   --color-accent-focus: rgba(37, 99, 235, 0.16);
   --color-accent-shadow: rgba(37, 99, 235, 0.22);
+
+  --color-input: #F8FAFC;
+  --color-card-shadow: rgba(15, 23, 42, 0.08);
+  --color-accent-text: #FFFFFF;
+  --color-hover: rgba(37, 99, 235, 0.05);
 
   --color-steel: #47718F;
 
