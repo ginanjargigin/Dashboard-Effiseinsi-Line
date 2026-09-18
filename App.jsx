@@ -239,3 +239,19 @@ export default function App() {
     </div>
   );
 }
+
+const [theme, setTheme] = useState(
+  () => localStorage.getItem("papan-theme") || "amber"
+);
+
+useEffect(() => {
+  document.documentElement.setAttribute(
+    "data-theme",
+    theme
+  );
+
+  localStorage.setItem(
+    "papan-theme",
+    theme
+  );
+}, [theme]);
