@@ -441,7 +441,7 @@ export default function InputView({
                    background:
                      d === date
                         ? "var(--color-accent-soft)"
-                        : C.panel
+                        : C.panel,
                     color: C.text,
                     fontFamily:
                       "'IBM Plex Mono', monospace",
