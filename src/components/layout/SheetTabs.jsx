@@ -27,9 +27,10 @@ export default function SheetTabs({ sheets, sheetId, setSheetId }) {
               fontSize: 13,
               fontWeight: 600,
               border: `1px solid ${active ? C.amber : C.line}`,
-              background: active
-                ? "rgba(242,169,59,0.12)"
-                : C.panel,
+              background:
+                  active
+                    ? "var(--color-accent-soft)"
+                    : C.panel,
               color: active ? C.amber : C.text,
               cursor: "pointer",
               whiteSpace: "nowrap",
