@@ -71,8 +71,8 @@ export default function SettingsView({
             }
           }}
           style={{
-            background: C.amber,
-            color: "#1A1D20",
+           background: C.amber,
+            color: "var(--color-accent-text)",
             border: "none",
             borderRadius: 10,
             padding: "0 16px",
