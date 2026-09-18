@@ -27,25 +27,27 @@ export default function SettingsView({
 }) {
   const [newSheetName, setNewSheetName] = useState("");
 
-  return (
-      <ThemeSelector
-    theme={theme}
-    setTheme={setTheme}
-  />
-    <div
-      style={{
-        padding: "20px",
-        maxWidth: 720,
-        margin: "0 auto",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          marginBottom: 20,
-        }}
-      >
+      return (
+        <div
+          style={{
+            padding: "20px",
+            maxWidth: 720,
+            margin: "0 auto",
+          }}
+        >
+          <ThemeSelector
+            theme={theme}
+            setTheme={setTheme}
+          />
+      
+          {/* KODE SETTINGS YANG SUDAH ADA */}
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              marginBottom: 20,
+            }}
+          >
         <input
           placeholder="Nama line baru..."
           value={newSheetName}
