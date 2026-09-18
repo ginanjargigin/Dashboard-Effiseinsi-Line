@@ -4,6 +4,29 @@ export default function GlobalStyle() {
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
             :root {
+  /* =========================================
+   THEME: FACTORY AMBER
+   Default theme
+   ========================================= */
+
+:root {
+  --color-bg: #1A1D20;
+  --color-panel: #232729;
+  --color-panel-2: #2B3033;
+  --color-line: #383E42;
+
+  --color-accent: #F2A93B;
+  --color-accent-soft: rgba(242, 169, 59, 0.12);
+  --color-accent-focus: rgba(242, 169, 59, 0.18);
+  --color-accent-shadow: rgba(242, 169, 59, 0.30);
+
+  --color-steel: #6C93B0;
+
+  --color-text: #ECEEEF;
+  --color-muted: #8C949A;
+}
+
+
 /* =========================================
    THEME: MIDNIGHT CYAN
    ========================================= */
@@ -46,21 +69,6 @@ export default function GlobalStyle() {
   --color-text: #18212B;
   --color-muted: #687481;
 }
-            
-        --color-bg: #1A1D20;
-        --color-panel: #232729;
-        --color-panel-2: #2B3033;
-        --color-line: #383E42;
-      
-        --color-accent: #F2A93B;
-        --color-accent-soft: rgba(242, 169, 59, 0.12);
-        --color-accent-focus: rgba(242, 169, 59, 0.18);
-        --color-accent-shadow: rgba(242, 169, 59, 0.30);
-      
-        --color-steel: #6C93B0;
-      
-        --color-text: #ECEEEF;
-        --color-muted: #8C949A;
 }
       * { box-sizing: border-box; }
             body {
