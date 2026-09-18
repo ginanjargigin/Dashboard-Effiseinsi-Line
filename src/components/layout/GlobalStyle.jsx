@@ -95,7 +95,14 @@ export default function GlobalStyle() {
           background-color 0.25s ease,
           color 0.25s ease;
       }
-      input[type=date] { color-scheme: dark; }
+      :root,
+      [data-theme="midnight"] {
+        color-scheme: dark;
+      }
+      
+      [data-theme="light"] {
+        color-scheme: light;
+      }
       .num-field {
         font-family: 'IBM Plex Mono', monospace;
         font-variant-numeric: tabular-nums;
