@@ -24,8 +24,12 @@ export default function SettingsView({
   moveSheet,
   theme,
   setTheme,
+  addNgType,
+  updateNgType,
+  removeNgType,
 }) {
   const [newSheetName, setNewSheetName] = useState("");
+  const [newNgNames, setNewNgNames] = useState({});
 
       return (
         <div
@@ -326,6 +330,136 @@ export default function SettingsView({
                 <Plus size={12} />
                 Tambah Jenis/Varian (CT)
               </button>
+                            <div
+                style={{
+                  marginTop: 14,
+                  paddingTop: 14,
+                  borderTop: `1px solid ${C.line}`,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: C.muted,
+                    marginBottom: 10,
+                    letterSpacing: "0.04em",
+                  }}
+                >
+                  NG CHARACTERISTICS
+                </div>
+
+                {(Array.isArray(s.ngTypes) ? s.ngTypes : []).map((ng) => (
+                  <div
+                    key={ng.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <input
+                      value={ng.name}
+                      onChange={(e) =>
+                        updateNgType(
+                          ng.id,
+                          e.target.value
+                        )
+                      }
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        background: C.panel2,
+                        border: `1px solid ${C.line}`,
+                        borderRadius: 6,
+                        padding: "6px 10px",
+                        color: C.text,
+                        fontSize: 13,
+                      }}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => removeNgType(ng.id)}
+                      title="Hapus NG"
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: C.bad,
+                        cursor: "pointer",
+                        padding: 4,
+                      }}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    marginTop: 8,
+                  }}
+                >
+                  <input
+                    value={newNgNames[s.id] || ""}
+                    onChange={(e) =>
+                      setNewNgNames((prev) => ({
+                        ...prev,
+                        [s.id]: e.target.value,
+                      }))
+                    }
+                    placeholder="Nama karakteristik NG..."
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      background: C.panel2,
+                      border: `1px solid ${C.line}`,
+                      borderRadius: 6,
+                      padding: "6px 10px",
+                      color: C.text,
+                      fontSize: 13,
+                    }}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const name = (
+                        newNgNames[s.id] || ""
+                      ).trim();
+
+                      if (!name) return;
+
+                      addNgType(name);
+
+                      setNewNgNames((prev) => ({
+                        ...prev,
+                        [s.id]: "",
+                      }));
+                    }}
+                    style={{
+                      background: "var(--color-accent-soft)",
+                      border: `1px solid ${C.line}`,
+                      borderRadius: 6,
+                      padding: "6px 10px",
+                      color: "var(--color-accent-text)",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    <Plus size={12} />
+                    Tambah NG
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         ))}
