@@ -1,12 +1,25 @@
-import { createSheet, addSheetToDb, removeSheetFromDb, updateSheetNameInDb, addMetricToDb, updateMetricInDb, removeMetricFromDb, moveSheetInDb } from "../utils/sheetUtils";
-
-import { updateEntryInDb, updateNoteInDb, clearEntryInDb } from "../utils/monthDataUtils";
+import {
+  createSheet,
+  addSheetToDb,
+  removeSheetFromDb,
+  updateSheetNameInDb,
+  addMetricToDb,
+  updateMetricInDb,
+  removeMetricFromDb,
+  moveSheetInDb,
+} from "../utils/sheetUtils";
 
 import {
   updateEntryInDb,
   updateNgEntryInDb,
   updateNoteInDb,
   clearEntryInDb,
+} from "../utils/monthDataUtils";
+
+import {
+  addNgTypeToDb,
+  updateNgTypeInDb,
+  removeNgTypeFromDb,
 } from "../utils/ngUtils";
 
 export function useAppActions({
