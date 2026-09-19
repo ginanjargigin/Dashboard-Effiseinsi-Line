@@ -4,6 +4,7 @@ import { updateEntryInDb, updateNoteInDb, clearEntryInDb } from "../utils/monthD
 
 import {
   addNgTypeToDb,
+  updateNgEntryInDb,
   updateNgTypeInDb,
   removeNgTypeFromDb,
 } from "../utils/ngUtils";
@@ -46,11 +47,25 @@ const removeNgType = (sId, ngTypeId) => {
     scheduleSave(next);
     return next;
   });
-};
-  const updateEntry = (sId, d, metricId, field, raw) => {
+  };
+  const updateNgEntry = (
+    sId,
+    d,
+    ngTypeId,
+    raw
+  ) => {
     setDb((prev) => {
-      const next = updateEntryInDb(prev, mk, sId, d, metricId, field, raw);
+      const next = updateNgEntryInDb(
+        prev,
+        mk,
+        sId,
+        d,
+        ngTypeId,
+        raw
+      );
+  
       scheduleSave(next);
+  
       return next;
     });
   };
@@ -139,6 +154,7 @@ const removeNgType = (sId, ngTypeId) => {
 
   return {
     updateEntry,
+    updateNgEntry,
     updateNote,
     clearEntry,
     addSheet,
@@ -151,5 +167,5 @@ const removeNgType = (sId, ngTypeId) => {
     addNgType,
     updateNgType,
     removeNgType,
-  };
+    };
 }
