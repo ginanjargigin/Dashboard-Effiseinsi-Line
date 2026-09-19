@@ -11,6 +11,7 @@ export function createSheet(name) {
         ct: 10,
       },
     ],
+    ngTypes: [],
   };
 }
 
