@@ -380,21 +380,28 @@ export default function SettingsView({
                       }}
                     />
 
-                    <button
-                      type="button"
-                      disabled={!newNgNames[s.id]?.trim()}
-                      onClick={() => removeNgType(s.id, ng.id)}
-                      title="Hapus NG"
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        color: C.bad,
-                        cursor: "pointer",
-                        padding: 4,
-                      }}
-                    >
-                      <X size={14} />
-                    </button>
+                   <button
+                    type="button"
+                    onClick={() => {
+                      const confirmed = window.confirm(
+                        `Yakin ingin menghapus karakteristik NG "${ng.name}"?`
+                      );
+                  
+                      if (!confirmed) return;
+                  
+                      removeNgType(s.id, ng.id);
+                    }}
+                    title="Hapus NG"
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: C.bad,
+                      cursor: "pointer",
+                      padding: 4,
+                    }}
+                  >
+                    <X size={14} />
+                  </button>
                   </div>
                 ))}
 
