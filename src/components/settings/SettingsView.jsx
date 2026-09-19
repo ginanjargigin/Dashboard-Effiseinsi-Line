@@ -361,8 +361,9 @@ export default function SettingsView({
                   >
                     <input
                       value={ng.name}
-                      onChange={(e) =>
+                     onChange={(e) =>
                         updateNgType(
+                          s.id,
                           ng.id,
                           e.target.value
                         )
@@ -381,7 +382,8 @@ export default function SettingsView({
 
                     <button
                       type="button"
-                      onClick={() => removeNgType(ng.id)}
+                      disabled={!newNgNames[s.id]?.trim()}
+                      onClick={() => removeNgType(s.id, ng.id)}
                       title="Hapus NG"
                       style={{
                         background: "transparent",
@@ -433,7 +435,7 @@ export default function SettingsView({
 
                       if (!name) return;
 
-                      addNgType(name);
+                      addNgType(s.id, name);
 
                       setNewNgNames((prev) => ({
                         ...prev,
@@ -441,12 +443,21 @@ export default function SettingsView({
                       }));
                     }}
                     style={{
-                      background: "var(--color-accent-soft)",
+                      background: newNgNames[s.id]?.trim()
+                        ? C.amber
+                        : "var(--color-accent-soft)",
                       border: `1px solid ${C.line}`,
                       borderRadius: 6,
                       padding: "6px 10px",
-                      color: "var(--color-accent-text)",
-                      cursor: "pointer",
+                      color: newNgNames[s.id]?.trim()
+                        ? "var(--color-accent-text)"
+                        : C.muted,
+                      cursor: newNgNames[s.id]?.trim()
+                        ? "pointer"
+                        : "not-allowed",
+                      opacity: newNgNames[s.id]?.trim()
+                        ? 1
+                        : 0.6,
                       display: "flex",
                       alignItems: "center",
                       gap: 4,
