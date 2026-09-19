@@ -1,12 +1,11 @@
 import { clampInt } from "./appUtils";
 
-export function updateEntryInDb(
+export function updateNgEntryInDb(
   db,
   mk,
   sheetId,
   date,
-  metricId,
-  field,
+  ngTypeId,
   raw
 ) {
   const val = clampInt(raw);
@@ -30,11 +29,25 @@ export function updateEntryInDb(
     ...(monthObj[sheetId][date] || {}),
   };
 
-  monthObj[sheetId][date][metricId] = {
-    ...(monthObj[sheetId][date][metricId] || {}),
-    [field]: val,
+  const dayObj = monthObj[sheetId][date];
+
+  const currentNg = {
+    ...(dayObj.ng || {}),
   };
 
+  if (val === 0) {
+    delete currentNg[ngTypeId];
+  } else {
+    currentNg[ngTypeId] = val;
+  }
+
+  if (Object.keys(currentNg).length === 0) {
+    delete dayObj.ng;
+  } else {
+    dayObj.ng = currentNg;
+  }
+
+  monthObj[sheetId][date] = dayObj;
   next.months[mk] = monthObj;
 
   return next;
