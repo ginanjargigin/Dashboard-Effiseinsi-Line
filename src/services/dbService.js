@@ -1,5 +1,6 @@
 import { fetchDb, saveDb } from "./jsonbinService";
 import { DEFAULT_SHEETS } from "../data/defaultSheets";
+import { migrateDbForNg } from "../utils/ngUtils";
 
 export async function initializeDb() {
   let remote = await fetchDb();
@@ -16,6 +17,11 @@ export async function initializeDb() {
   if (!remote.months) {
     remote.months = {};
   }
+const migration = migrateDbForNg(remote);
 
+if (migration.changed) {
+  remote = migration.db;
+  await saveDb(remote);
+}
   return remote;
 }
