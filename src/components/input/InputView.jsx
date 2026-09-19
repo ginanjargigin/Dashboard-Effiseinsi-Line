@@ -59,6 +59,7 @@ export default function InputView({
   setDate,
   monthData,
   updateEntry,
+  updateNgEntry,
   updateNote,
   clearEntry,
 }) {
@@ -67,6 +68,16 @@ export default function InputView({
 
   const entry =
     (monthData[sheet.id] && monthData[sheet.id][date]) || {};
+ 
+  const ngTypes = Array.isArray(sheet.ngTypes)
+  ? sheet.ngTypes
+  : [];
+
+  const ngData =
+    entry.ng &&
+    typeof entry.ng === "object"
+      ? entry.ng
+      : {};
 
   const note =
     typeof entry.note === "string" ? entry.note : "";
@@ -371,6 +382,129 @@ export default function InputView({
         </button>
       </div>
 
+      {ngTypes.length > 0 && (
+  <div
+    style={{
+      background: "var(--color-panel)",
+      border: "1px solid var(--color-line)",
+      borderRadius: 10,
+      padding: 12,
+      marginBottom: 16,
+    }}
+  >
+    <div
+      style={{
+        fontSize: 11,
+        fontWeight: 700,
+        color: "var(--color-muted)",
+        letterSpacing: "0.08em",
+        marginBottom: 10,
+      }}
+    >
+      NG HARI INI
+    </div>
+
+    <div
+      style={{
+        display: "grid",
+        gap: 8,
+      }}
+    >
+      {ngTypes.map((ngType) => {
+        const value = ngData[ngType.id] ?? 0;
+
+        return (
+          <div
+            key={ngType.id}
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "minmax(0, 1fr) 90px",
+              gap: 8,
+              alignItems: "center",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 13,
+                color: "var(--color-text)",
+                fontWeight: 600,
+              }}
+            >
+              {ngType.name}
+            </div>
+
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={value}
+              onChange={(e) =>
+                updateNgEntry(
+                  sheet.id,
+                  date,
+                  ngType.id,
+                  e.target.value
+                )
+              }
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                height: 38,
+                padding: "0 10px",
+                borderRadius: 8,
+                border: "1px solid var(--color-line)",
+                background: "var(--color-input)",
+                color: "var(--color-text)",
+                fontSize: 14,
+                fontWeight: 700,
+                textAlign: "right",
+                outline: "none",
+              }}
+            />
+          </div>
+        );
+      })}
+    </div>
+
+    <div
+      style={{
+        marginTop: 10,
+        paddingTop: 10,
+        borderTop:
+          "1px solid var(--color-line)",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        fontSize: 12,
+      }}
+    >
+      <span
+        style={{
+          color: "var(--color-muted)",
+          fontWeight: 600,
+        }}
+      >
+        TOTAL NG
+      </span>
+
+      <strong
+        style={{
+          color: "var(--color-accent)",
+          fontSize: 15,
+        }}
+      >
+        {ngTypes.reduce(
+          (total, ngType) =>
+            total +
+            Number(ngData[ngType.id] || 0),
+          0
+        )}{" "}
+        PCS
+      </strong>
+    </div>
+  </div>
+)}
       {/* METRIC CARDS */}
       <div
         style={{
