@@ -14,7 +14,7 @@ export function useAppActions({
   sheetId,
   mk,
   scheduleSave,
-}) 
+});
 {
 const addNgType = (name) => {
   setDb((prev) => {
