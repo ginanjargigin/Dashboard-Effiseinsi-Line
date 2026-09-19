@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-
 import {
   Plus,
   Trash2,
@@ -30,32 +29,35 @@ export default function SettingsView({
 }) {
   const [newSheetName, setNewSheetName] = useState("");
   const [newNgNames, setNewNgNames] = useState({});
+  const [ngFeedback, setNgFeedback] = useState({});
 
-      return (
-        <div
-          style={{
-            padding: "20px",
-            maxWidth: 720,
-            margin: "0 auto",
-          }}
-        >
-          <ThemeSelector
-            theme={theme}
-            setTheme={setTheme}
-          />
-      
-          {/* KODE SETTINGS YANG SUDAH ADA */}
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              marginBottom: 20,
-            }}
-          >
+  return (
+    <div
+      style={{
+        padding: "20px",
+        maxWidth: 720,
+        margin: "0 auto",
+      }}
+    >
+      <ThemeSelector
+        theme={theme}
+        setTheme={setTheme}
+      />
+
+      {/* KODE SETTINGS YANG SUDAH ADA */}
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          marginBottom: 20,
+        }}
+      >
         <input
           placeholder="Nama line baru..."
           value={newSheetName}
-          onChange={(e) => setNewSheetName(e.target.value)}
+          onChange={(e) =>
+            setNewSheetName(e.target.value)
+          }
           style={{
             flex: 1,
             background: C.panel,
@@ -75,7 +77,7 @@ export default function SettingsView({
             }
           }}
           style={{
-           background: C.amber,
+            background: C.amber,
             color: "var(--color-accent-text)",
             border: "none",
             borderRadius: 10,
@@ -126,7 +128,9 @@ export default function SettingsView({
               >
                 <button
                   disabled={idx === 0}
-                  onClick={() => moveSheet(s.id, -1)}
+                  onClick={() =>
+                    moveSheet(s.id, -1)
+                  }
                   style={{
                     background: C.panel2,
                     border: `1px solid ${C.line}`,
@@ -136,7 +140,10 @@ export default function SettingsView({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: idx === 0 ? C.muted : C.text,
+                    color:
+                      idx === 0
+                        ? C.muted
+                        : C.text,
                     cursor:
                       idx === 0
                         ? "not-allowed"
@@ -147,8 +154,12 @@ export default function SettingsView({
                 </button>
 
                 <button
-                  disabled={idx === sheets.length - 1}
-                  onClick={() => moveSheet(s.id, 1)}
+                  disabled={
+                    idx === sheets.length - 1
+                  }
+                  onClick={() =>
+                    moveSheet(s.id, 1)
+                  }
                   style={{
                     background: C.panel2,
                     border: `1px solid ${C.line}`,
@@ -175,7 +186,10 @@ export default function SettingsView({
               <input
                 value={s.name}
                 onChange={(e) =>
-                  updateSheetName(s.id, e.target.value)
+                  updateSheetName(
+                    s.id,
+                    e.target.value
+                  )
                 }
                 style={{
                   flex: 1,
@@ -294,7 +308,10 @@ export default function SettingsView({
                   {s.metrics.length > 1 && (
                     <button
                       onClick={() =>
-                        removeMetric(s.id, m.id)
+                        removeMetric(
+                          s.id,
+                          m.id
+                        )
                       }
                       style={{
                         background: "transparent",
@@ -330,7 +347,9 @@ export default function SettingsView({
                 <Plus size={12} />
                 Tambah Jenis/Varian (CT)
               </button>
-                            <div
+
+              {/* NG CHARACTERISTICS */}
+              <div
                 style={{
                   marginTop: 14,
                   paddingTop: 14,
@@ -349,7 +368,10 @@ export default function SettingsView({
                   NG CHARACTERISTICS
                 </div>
 
-                {(Array.isArray(s.ngTypes) ? s.ngTypes : []).map((ng) => (
+                {(Array.isArray(s.ngTypes)
+                  ? s.ngTypes
+                  : []
+                ).map((ng) => (
                   <div
                     key={ng.id}
                     style={{
@@ -361,7 +383,7 @@ export default function SettingsView({
                   >
                     <input
                       value={ng.name}
-                     onChange={(e) =>
+                      onChange={(e) =>
                         updateNgType(
                           s.id,
                           ng.id,
@@ -380,31 +402,37 @@ export default function SettingsView({
                       }}
                     />
 
-                   <button
-                    type="button"
-                    onClick={() => {
-                      const confirmed = window.confirm(
-                        `Yakin ingin menghapus karakteristik NG "${ng.name}"?`
-                      );
-                  
-                      if (!confirmed) return;
-                  
-                      removeNgType(s.id, ng.id);
-                    }}
-                    title="Hapus NG"
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      color: C.bad,
-                      cursor: "pointer",
-                      padding: 4,
-                    }}
-                  >
-                    <X size={14} />
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const confirmed =
+                          window.confirm(
+                            `Yakin ingin menghapus karakteristik NG "${ng.name}"?`
+                          );
+
+                        if (!confirmed) return;
+
+                        removeNgType(
+                          s.id,
+                          ng.id
+                        );
+                      }}
+                      title="Hapus NG"
+                      style={{
+                        background:
+                          "transparent",
+                        border: "none",
+                        color: C.bad,
+                        cursor: "pointer",
+                        padding: 4,
+                      }}
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
                 ))}
 
+                {/* INPUT TAMBAH NG */}
                 <div
                   style={{
                     display: "flex",
@@ -413,70 +441,208 @@ export default function SettingsView({
                   }}
                 >
                   <input
-                    value={newNgNames[s.id] || ""}
-                    onChange={(e) =>
-                      setNewNgNames((prev) => ({
-                        ...prev,
-                        [s.id]: e.target.value,
-                      }))
+                    value={
+                      newNgNames[s.id] || ""
                     }
+                    onChange={(e) => {
+                      const value =
+                        e.target.value;
+
+                      setNewNgNames(
+                        (prev) => ({
+                          ...prev,
+                          [s.id]: value,
+                        })
+                      );
+
+                      const normalized =
+                        value
+                          .trim()
+                          .toLowerCase();
+
+                      const duplicate =
+                        normalized &&
+                        (
+                          Array.isArray(
+                            s.ngTypes
+                          )
+                            ? s.ngTypes
+                            : []
+                        ).some(
+                          (ng) =>
+                            ng.name
+                              .trim()
+                              .toLowerCase() ===
+                            normalized
+                        );
+
+                      setNgFeedback(
+                        (prev) => ({
+                          ...prev,
+                          [s.id]:
+                            duplicate
+                              ? "Karakteristik NG tersebut sudah ada."
+                              : "",
+                        })
+                      );
+                    }}
                     placeholder="Nama karakteristik NG..."
                     style={{
                       flex: 1,
                       minWidth: 0,
-                      background: C.panel2,
-                      border: `1px solid ${C.line}`,
+                      background:
+                        C.panel2,
+                      border: `1px solid ${
+                        ngFeedback[s.id]
+                          ? C.bad
+                          : C.line
+                      }`,
                       borderRadius: 6,
-                      padding: "6px 10px",
+                      padding:
+                        "6px 10px",
                       color: C.text,
                       fontSize: 13,
+                      outline: "none",
                     }}
                   />
 
                   <button
                     type="button"
+                    disabled={
+                      !newNgNames[
+                        s.id
+                      ]?.trim() ||
+                      Boolean(
+                        ngFeedback[s.id]
+                      )
+                    }
                     onClick={() => {
                       const name = (
-                        newNgNames[s.id] || ""
+                        newNgNames[
+                          s.id
+                        ] || ""
                       ).trim();
 
                       if (!name) return;
 
-                      addNgType(s.id, name);
+                      const duplicate = (
+                        Array.isArray(
+                          s.ngTypes
+                        )
+                          ? s.ngTypes
+                          : []
+                      ).some(
+                        (ng) =>
+                          ng.name
+                            .trim()
+                            .toLowerCase() ===
+                          name.toLowerCase()
+                      );
 
-                      setNewNgNames((prev) => ({
-                        ...prev,
-                        [s.id]: "",
-                      }));
+                      if (duplicate) {
+                        setNgFeedback(
+                          (prev) => ({
+                            ...prev,
+                            [s.id]:
+                              "Karakteristik NG tersebut sudah ada.",
+                          })
+                        );
+
+                        return;
+                      }
+
+                      addNgType(
+                        s.id,
+                        name
+                      );
+
+                      setNewNgNames(
+                        (prev) => ({
+                          ...prev,
+                          [s.id]: "",
+                        })
+                      );
+
+                      setNgFeedback(
+                        (prev) => ({
+                          ...prev,
+                          [s.id]: "",
+                        })
+                      );
                     }}
                     style={{
-                      background: newNgNames[s.id]?.trim()
-                        ? C.amber
-                        : "var(--color-accent-soft)",
+                      background:
+                        newNgNames[
+                          s.id
+                        ]?.trim() &&
+                        !ngFeedback[
+                          s.id
+                        ]
+                          ? C.amber
+                          : "var(--color-accent-soft)",
                       border: `1px solid ${C.line}`,
                       borderRadius: 6,
-                      padding: "6px 10px",
-                      color: newNgNames[s.id]?.trim()
-                        ? "var(--color-accent-text)"
-                        : C.muted,
-                      cursor: newNgNames[s.id]?.trim()
-                        ? "pointer"
-                        : "not-allowed",
-                      opacity: newNgNames[s.id]?.trim()
-                        ? 1
-                        : 0.6,
+                      padding:
+                        "6px 10px",
+                      color:
+                        newNgNames[
+                          s.id
+                        ]?.trim() &&
+                        !ngFeedback[
+                          s.id
+                        ]
+                          ? "var(--color-accent-text)"
+                          : C.muted,
+                      cursor:
+                        newNgNames[
+                          s.id
+                        ]?.trim() &&
+                        !ngFeedback[
+                          s.id
+                        ]
+                          ? "pointer"
+                          : "not-allowed",
+                      opacity:
+                        newNgNames[
+                          s.id
+                        ]?.trim() &&
+                        !ngFeedback[
+                          s.id
+                        ]
+                          ? 1
+                          : 0.6,
                       display: "flex",
-                      alignItems: "center",
+                      alignItems:
+                        "center",
                       gap: 4,
                       fontSize: 12,
                       fontWeight: 600,
-                      whiteSpace: "nowrap",
+                      whiteSpace:
+                        "nowrap",
                     }}
                   >
                     <Plus size={12} />
                     Tambah NG
                   </button>
                 </div>
+
+                {/* FEEDBACK DUPLICATE */}
+                {ngFeedback[s.id] && (
+                  <div
+                    style={{
+                      marginTop: 6,
+                      fontSize: 11,
+                      color: C.bad,
+                      display: "flex",
+                      alignItems:
+                        "center",
+                      gap: 5,
+                    }}
+                  >
+                    <span>⚠</span>
+                    {ngFeedback[s.id]}
+                  </div>
+                )}
               </div>
             </div>
           </div>
