@@ -38,7 +38,7 @@ const removeNgType = (ngTypeId) => {
     return next;
   });
 };
-{
+
   const updateEntry = (sId, d, metricId, field, raw) => {
     setDb((prev) => {
       const next = updateEntryInDb(prev, mk, sId, d, metricId, field, raw);
