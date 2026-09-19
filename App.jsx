@@ -134,12 +134,16 @@ export default function App() {
   updateMetric,
   removeMetric,
   moveSheet,
+  addNgType,
+  updateNgType,
+  removeNgType,
 } = useAppActions({
   setDb,
   setSheetId,
   sheetId,
   mk,
   scheduleSave,
+   
 });
   if (!ready || (!db && !loadError)) {
     return (
@@ -252,6 +256,9 @@ export default function App() {
           moveSheet={moveSheet}
           theme={theme}
           setTheme={setTheme}
+          addNgType={addNgType}
+          updateNgType={updateNgType}
+          removeNgType={removeNgType}
         />
       )}
     </div>
