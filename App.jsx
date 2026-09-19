@@ -125,6 +125,7 @@ export default function App() {
   const monthData = (db && db.months[mk]) || {};
  const {
   updateEntry,
+  updateNgEntry,
   updateNote,
   clearEntry,
   addSheet,
@@ -227,6 +228,7 @@ export default function App() {
           setDate={setDate}
           monthData={monthData}
           updateEntry={updateEntry}
+          updateNgEntry={updateNgEntry}
           updateNote={updateNote}
           clearEntry={clearEntry}
         />
