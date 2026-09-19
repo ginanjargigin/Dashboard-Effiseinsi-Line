@@ -50,6 +50,8 @@ export function updateNgTypeInDb(
 ) {
   const trimmed = String(name ?? "").trim();
 
+  if (!trimmed) return db;
+
   return {
     ...db,
     sheets: db.sheets.map((sheet) => {
@@ -58,6 +60,15 @@ export function updateNgTypeInDb(
       const ngTypes = Array.isArray(sheet.ngTypes)
         ? sheet.ngTypes
         : [];
+
+      const duplicate = ngTypes.some(
+        (item) =>
+          item.id !== ngTypeId &&
+          item.name.trim().toLowerCase() ===
+            trimmed.toLowerCase()
+      );
+
+      if (duplicate) return sheet;
 
       return {
         ...sheet,
@@ -73,31 +84,6 @@ export function updateNgTypeInDb(
     }),
   };
 }
-
-export function removeNgTypeFromDb(
-  db,
-  sheetId,
-  ngTypeId
-) {
-  return {
-    ...db,
-    sheets: db.sheets.map((sheet) => {
-      if (sheet.id !== sheetId) return sheet;
-
-      const ngTypes = Array.isArray(sheet.ngTypes)
-        ? sheet.ngTypes
-        : [];
-
-      return {
-        ...sheet,
-        ngTypes: ngTypes.filter(
-          (item) => item.id !== ngTypeId
-        ),
-      };
-    }),
-  };
-}
-
 /*
  * Migration database lama.
  *
