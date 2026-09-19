@@ -2,13 +2,44 @@ import { createSheet, addSheetToDb, removeSheetFromDb, updateSheetNameInDb, addM
 
 import { updateEntryInDb, updateNoteInDb, clearEntryInDb } from "../utils/monthDataUtils";
 
+import {
+  addNgTypeToDb,
+  updateNgTypeInDb,
+  removeNgTypeFromDb,
+} from "../utils/ngUtils";
+
 export function useAppActions({
   setDb,
   setSheetId,
   sheetId,
   mk,
   scheduleSave,
-}) {
+}) 
+}
+const addNgType = (name) => {
+  setDb((prev) => {
+    const next = addNgTypeToDb(prev, sheetId, name);
+    scheduleSave(next);
+    return next;
+  });
+};
+
+const updateNgType = (ngTypeId, name) => {
+  setDb((prev) => {
+    const next = updateNgTypeInDb(prev, sheetId, ngTypeId, name);
+    scheduleSave(next);
+    return next;
+  });
+};
+
+const removeNgType = (ngTypeId) => {
+  setDb((prev) => {
+    const next = removeNgTypeFromDb(prev, sheetId, ngTypeId);
+    scheduleSave(next);
+    return next;
+  });
+};
+{
   const updateEntry = (sId, d, metricId, field, raw) => {
     setDb((prev) => {
       const next = updateEntryInDb(prev, mk, sId, d, metricId, field, raw);
@@ -110,5 +141,8 @@ export function useAppActions({
     updateMetric,
     removeMetric,
     moveSheet,
+    addNgType,
+    updateNgType,
+    removeNgType,
   };
 }
