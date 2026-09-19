@@ -44,34 +44,39 @@ export default function ThemeSelector({
       }}
     >
       {/* TOMBOL TITIK TIGA */}
-      <button
+        <button
         onClick={() => setOpen((prev) => !prev)}
         title="Tema tampilan"
         aria-label="Tema tampilan"
         style={{
-          width: 40,
           height: 40,
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
+          gap: 7,
+          padding: "0 10px",
           background: "var(--color-panel)",
-          border: `1px solid ${"var(--color-line)"}`,
+          border: "1px solid var(--color-line)",
           borderRadius: 9,
           color: "var(--color-text)",
           cursor: "pointer",
           position: "relative",
+          fontSize: 12.5,
+          fontWeight: 600,
         }}
       >
-        <MoreVertical size={19} />
-
-        {/* INDIKATOR TEMA AKTIF */}
+        <Palette size={16} />
+      
+        <span>Tema</span>
+      
+        <MoreVertical size={17} />
+      
         <span
           style={{
             position: "absolute",
-            right: 6,
-            top: 6,
-            width: 6,
-            height: 6,
+            right: 5,
+            top: 5,
+            width: 5,
+            height: 5,
             borderRadius: "50%",
             background: activeTheme.color,
           }}
