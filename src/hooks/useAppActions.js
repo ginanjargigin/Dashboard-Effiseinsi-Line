@@ -3,10 +3,10 @@ import { createSheet, addSheetToDb, removeSheetFromDb, updateSheetNameInDb, addM
 import { updateEntryInDb, updateNoteInDb, clearEntryInDb } from "../utils/monthDataUtils";
 
 import {
-  addNgTypeToDb,
+  updateEntryInDb,
   updateNgEntryInDb,
-  updateNgTypeInDb,
-  removeNgTypeFromDb,
+  updateNoteInDb,
+  clearEntryInDb,
 } from "../utils/ngUtils";
 
 export function useAppActions({
