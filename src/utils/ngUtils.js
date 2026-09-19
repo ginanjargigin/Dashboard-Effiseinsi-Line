@@ -84,6 +84,29 @@ export function updateNgTypeInDb(
     }),
   };
 }
+export function removeNgTypeFromDb(
+  db,
+  sheetId,
+  ngTypeId
+) {
+  return {
+    ...db,
+    sheets: db.sheets.map((sheet) => {
+      if (sheet.id !== sheetId) return sheet;
+
+      const ngTypes = Array.isArray(sheet.ngTypes)
+        ? sheet.ngTypes
+        : [];
+
+      return {
+        ...sheet,
+        ngTypes: ngTypes.filter(
+          (item) => item.id !== ngTypeId
+        ),
+      };
+    }),
+  };
+}
 /*
  * Migration database lama.
  *
