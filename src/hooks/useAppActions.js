@@ -15,30 +15,38 @@ export function useAppActions({
   mk,
   scheduleSave,
 }) {
-const addNgType = (name) => {
+const addNgType = (sId, name) => {
   setDb((prev) => {
-    const next = addNgTypeToDb(prev, sheetId, name);
+    const next = addNgTypeToDb(prev, sId, name);
+    scheduleSave(next);
+    return next;
+    });
+};
+
+const updateNgType = (sId, ngTypeId, name) => {
+  setDb((prev) => {
+    const next = updateNgTypeInDb(
+      prev,
+      sId,
+      ngTypeId,
+      name
+    );
     scheduleSave(next);
     return next;
   });
 };
 
-const updateNgType = (ngTypeId, name) => {
+const removeNgType = (sId, ngTypeId) => {
   setDb((prev) => {
-    const next = updateNgTypeInDb(prev, sheetId, ngTypeId, name);
+    const next = removeNgTypeFromDb(
+      prev,
+      sId,
+      ngTypeId
+    );
     scheduleSave(next);
     return next;
   });
 };
-
-const removeNgType = (ngTypeId) => {
-  setDb((prev) => {
-    const next = removeNgTypeFromDb(prev, sheetId, ngTypeId);
-    scheduleSave(next);
-    return next;
-  });
-};
-
   const updateEntry = (sId, d, metricId, field, raw) => {
     setDb((prev) => {
       const next = updateEntryInDb(prev, mk, sId, d, metricId, field, raw);
