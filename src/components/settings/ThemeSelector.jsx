@@ -1,7 +1,9 @@
 import {
+  MoreVertical,
   Palette,
   Check,
 } from "lucide-react";
+import { useState } from "react";
 
 const themes = [
   {
@@ -28,108 +30,164 @@ export default function ThemeSelector({
   theme,
   setTheme,
 }) {
+  const [open, setOpen] = useState(false);
+
+  const activeTheme =
+    themes.find((item) => item.id === theme) ||
+    themes[0];
+
   return (
     <div
       style={{
-        background: "var(--color-panel)",
-        border: "1px solid var(--color-line)",
-        borderRadius: 12,
-        padding: 14,
-        marginBottom: 20,
+        position: "relative",
+        display: "inline-flex",
       }}
     >
-      <div
+      {/* TOMBOL TITIK TIGA */}
+      <button
+        onClick={() => setOpen((prev) => !prev)}
+        title="Tema tampilan"
+        aria-label="Tema tampilan"
         style={{
+          width: 40,
+          height: 40,
           display: "flex",
           alignItems: "center",
-          gap: 7,
+          justifyContent: "center",
+          background: "var(--color-panel)",
+          border: `1px solid ${"var(--color-line)"}`,
+          borderRadius: 9,
           color: "var(--color-text)",
-          fontSize: 13,
-          fontWeight: 700,
-          marginBottom: 12,
+          cursor: "pointer",
+          position: "relative",
         }}
       >
-        <Palette size={16} />
-        Tema Tampilan
-      </div>
+        <MoreVertical size={19} />
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
-        }}
-      >
-        {themes.map((item) => {
-          const active = theme === item.id;
+        {/* INDIKATOR TEMA AKTIF */}
+        <span
+          style={{
+            position: "absolute",
+            right: 6,
+            top: 6,
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            background: activeTheme.color,
+          }}
+        />
+      </button>
 
-          return (
-            <button
-              key={item.id}
-              onClick={() => setTheme(item.id)}
-              style={{
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "10px 12px",
+      {/* MENU TEMA */}
+      {open && (
+        <div
+          style={{
+            position: "absolute",
+            top: 46,
+            right: 0,
+            width: 240,
+            padding: 8,
+            background: "var(--color-panel)",
+            border: `1px solid ${"var(--color-line)"}`,
+            borderRadius: 10,
+            boxShadow:
+              "0 8px 24px var(--color-card-shadow)",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 7,
+              padding: "7px 8px 9px",
+              color: "var(--color-text)",
+              fontSize: 12,
+              fontWeight: 700,
+            }}
+          >
+            <Palette size={15} />
+            Tema Tampilan
+          </div>
 
-                background: active
-                  ? "var(--color-accent-soft)"
-                  : "transparent",
+          <div
+            style={{
+              height: 1,
+              background: "var(--color-line)",
+              marginBottom: 6,
+            }}
+          />
 
-                border: active
-                  ? "1px solid var(--color-accent)"
-                  : "1px solid var(--color-line)",
+          {themes.map((item) => {
+            const active = theme === item.id;
 
-                borderRadius: 9,
-
-                color: "var(--color-text)",
-                cursor: "pointer",
-                textAlign: "left",
-              }}
-            >
-              <span
-                style={{
-                  width: 16,
-                  height: 16,
-                  borderRadius: "50%",
-                  background: item.color,
-                  flexShrink: 0,
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setTheme(item.id);
+                  setOpen(false);
                 }}
-              />
-
-              <div style={{ flex: 1 }}>
-                <div
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 9,
+                  padding: "9px 8px",
+                  background: active
+                    ? "var(--color-accent-soft)"
+                    : "transparent",
+                  border: active
+                    ? "1px solid var(--color-accent)"
+                    : "1px solid transparent",
+                  borderRadius: 7,
+                  color: "var(--color-text)",
+                  cursor: "pointer",
+                  textAlign: "left",
+                }}
+              >
+                <span
                   style={{
-                    fontSize: 13,
-                    fontWeight: 600,
+                    width: 13,
+                    height: 13,
+                    borderRadius: "50%",
+                    background: item.color,
+                    flexShrink: 0,
                   }}
-                >
-                  {item.name}
-                </div>
-
-                <div
-                  style={{
-                    fontSize: 10.5,
-                    color: "var(--color-muted)",
-                    marginTop: 2,
-                  }}
-                >
-                  {item.description}
-                </div>
-              </div>
-
-              {active && (
-                <Check
-                  size={16}
-                  color="var(--color-accent)"
                 />
-              )}
-            </button>
-          );
-        })}
-      </div>
+
+                <div style={{ flex: 1 }}>
+                  <div
+                    style={{
+                      fontSize: 12.5,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {item.name}
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: 10,
+                      color: "var(--color-muted)",
+                      marginTop: 2,
+                    }}
+                  >
+                    {item.description}
+                  </div>
+                </div>
+
+                {active && (
+                  <Check
+                    size={15}
+                    color="var(--color-accent)"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
