@@ -89,8 +89,11 @@ export default function ThemeSelector({
           style={{
             position: "absolute",
             top: 46,
-            right: 0,
-            width: 240,
+            left: 0,
+            right: "auto",
+            width: "min(240px, calc(100vw - 24px))",
+            maxWidth: "calc(100vw - 24px)",
+   
             padding: 8,
             background: "var(--color-panel)",
             border: `1px solid ${"var(--color-line)"}`,
