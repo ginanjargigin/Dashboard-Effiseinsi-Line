@@ -6,6 +6,7 @@ import React, {
 
 import { saveDb } from "./src/services/jsonbinService";
 import { initializeDb } from "./src/services/dbService";
+import { saveDbToSupabase } from "./src/services/supabaseWriteService";
 import { createSaveScheduler } from "./src/services/saveService";
 
 import { C } from "./src/constants/appConstants";
@@ -59,7 +60,22 @@ export default function App() {
 
   const mk = monthKeyOf(date);
 
+useEffect(() => {
+  if (!ready || !db) return;
 
+  saveDbToSupabase(db)
+    .then(() => {
+      console.log(
+        "SUPABASE SHADOW WRITE TEST: SUCCESS"
+      );
+    })
+    .catch((error) => {
+      console.error(
+        "SUPABASE SHADOW WRITE TEST: FAILED",
+        error
+      );
+    });
+}, [ready, db]);
 
   useEffect(() => {
     (async () => {
