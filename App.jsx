@@ -71,7 +71,7 @@ export default function App() {
         setSheetId(remote.sheets[0].id);
         setReady(true);
       } catch (e) {
-        console.error("JSONBin connection error:", e);
+        console.error("Supabase connection error:", e);
 
         let message =
           "Tidak dapat terhubung ke server JSONBin. Periksa koneksi internet.";
