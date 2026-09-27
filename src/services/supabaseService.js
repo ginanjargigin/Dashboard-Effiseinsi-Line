@@ -175,9 +175,16 @@ export async function initializeDbFromSupabase() {
       months[mk][day.sheet_id][day.tanggal] = {};
     }
 
-    months[mk][day.sheet_id][day.tanggal][entry.metric_id] = {
-      pcs: Number(entry.pcs ?? 0),
-      menit: Number(entry.menit ?? 0),
+   months[mk][day.sheet_id][day.tanggal][entry.metric_id] = {
+  pcs:
+    entry.pcs === null
+      ? ""
+      : Number(entry.pcs),
+
+  menit:
+    entry.menit === null
+      ? ""
+      : Number(entry.menit),
     };
   }
 
