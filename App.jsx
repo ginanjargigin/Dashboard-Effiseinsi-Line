@@ -149,8 +149,9 @@ export default function App() {
   };
 
   const monthData = (db && db.months[mk]) || {};
- const {
+const {
   updateEntry,
+  updateNgEntry,
   updateNote,
   clearEntry,
   addSheet,
@@ -160,6 +161,9 @@ export default function App() {
   updateMetric,
   removeMetric,
   moveSheet,
+  addNgType,
+  updateNgType,
+  removeNgType,
 } = useAppActions({
   setDb,
   setSheetId,
@@ -244,14 +248,15 @@ export default function App() {
 
       {view === "input" && (
         <InputView
-          sheet={currentSheet}
-          date={date}
-          setDate={setDate}
-          monthData={monthData}
-          updateEntry={updateEntry}
-          updateNote={updateNote}
-          clearEntry={clearEntry}
-        />
+        sheet={currentSheet}
+        date={date}
+        setDate={setDate}
+        monthData={monthData}
+        updateEntry={updateEntry}
+        updateNgEntry={updateNgEntry}
+        updateNote={updateNote}
+        clearEntry={clearEntry}
+      />
       )}
 
       {view === "dashboard" && (
@@ -267,18 +272,21 @@ export default function App() {
       )}
 
       {view === "settings" && (
-        <SettingsView
-          sheets={sheets}
-          addSheet={addSheet}
-          removeSheet={removeSheet}
-          updateSheetName={updateSheetName}
-          addMetric={addMetric}
-          updateMetric={updateMetric}
-          removeMetric={removeMetric}
-          moveSheet={moveSheet}
-          theme={theme}
-          setTheme={setTheme}
-        />
+       <SettingsView
+        sheets={sheets}
+        addSheet={addSheet}
+        removeSheet={removeSheet}
+        updateSheetName={updateSheetName}
+        addMetric={addMetric}
+        updateMetric={updateMetric}
+        removeMetric={removeMetric}
+        moveSheet={moveSheet}
+        theme={theme}
+        setTheme={setTheme}
+        addNgType={addNgType}
+        updateNgType={updateNgType}
+        removeNgType={removeNgType}
+      />
       )}
     </div>
   );
