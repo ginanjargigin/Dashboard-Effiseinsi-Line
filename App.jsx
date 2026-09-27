@@ -102,25 +102,26 @@ export default function App() {
     })();
   }, []);
 
-  const saveDbWithShadow = async (nextDb) => {
-  // JSONBin tetap menjadi primary database.
-  await saveDb(nextDb);
+ const saveDbWithBackup = async (nextDb) => {
+  // PRIMARY: Supabase
+  await saveDbToSupabase(nextDb);
 
-  // Supabase hanya sebagai shadow database.
+  console.log(
+    "SUPABASE PRIMARY SAVE: SUCCESS"
+  );
+
+  // BACKUP: JSONBin
   try {
-    await saveDbToSupabase(nextDb);
+    await saveDb(nextDb);
 
     console.log(
-      "SUPABASE SHADOW SAVE: SUCCESS"
+      "JSONBIN BACKUP SAVE: SUCCESS"
     );
   } catch (error) {
-    console.error(
-      "SUPABASE SHADOW SAVE: FAILED",
+    console.warn(
+      "JSONBIN BACKUP SAVE: FAILED",
       error
     );
-
-    // Jangan menggagalkan penyimpanan utama.
-    // JSONBin sudah berhasil disimpan.
   }
 };
 
@@ -128,7 +129,7 @@ export default function App() {
 
   if (!saveSchedulerRef.current) {
     saveSchedulerRef.current = createSaveScheduler({
-      saveDb: saveDbWithShadow,
+      saveDb: saveDbWithBackup,
       setSaveState,
       delay: 600,
     });
