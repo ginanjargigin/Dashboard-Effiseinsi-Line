@@ -29,15 +29,6 @@ import {
 } from "lucide-react";
 import { testSupabaseConnection } from "./src/services/supabaseTest";
 
-useEffect(() => {
-  testSupabaseConnection()
-    .then((result) => {
-      console.log("SUPABASE TEST RESULT:", result);
-    })
-    .catch((error) => {
-      console.error("SUPABASE TEST ERROR:", error);
-    });
-}, []);
 
 
 /* ----------------------------------- App ------------------------------------- */
@@ -68,7 +59,15 @@ export default function App() {
 
 
   const mk = monthKeyOf(date);
-
+useEffect(() => {
+  testSupabaseConnection()
+    .then((result) => {
+      console.log("SUPABASE TEST RESULT:", result);
+    })
+    .catch((error) => {
+      console.error("SUPABASE TEST ERROR:", error);
+    });
+  }, []);
   useEffect(() => {
     (async () => {
       try {
