@@ -60,22 +60,7 @@ export default function App() {
 
   const mk = monthKeyOf(date);
 
-useEffect(() => {
-  if (!ready || !db) return;
 
-  saveDbToSupabase(db)
-    .then(() => {
-      console.log(
-        "SUPABASE SHADOW WRITE TEST: SUCCESS"
-      );
-    })
-    .catch((error) => {
-      console.error(
-        "SUPABASE SHADOW WRITE TEST: FAILED",
-        error
-      );
-    });
-}, [ready, db]);
 
   useEffect(() => {
     (async () => {
@@ -117,11 +102,33 @@ useEffect(() => {
     })();
   }, []);
 
+  const saveDbWithShadow = async (nextDb) => {
+  // JSONBin tetap menjadi primary database.
+  await saveDb(nextDb);
+
+  // Supabase hanya sebagai shadow database.
+  try {
+    await saveDbToSupabase(nextDb);
+
+    console.log(
+      "SUPABASE SHADOW SAVE: SUCCESS"
+    );
+  } catch (error) {
+    console.error(
+      "SUPABASE SHADOW SAVE: FAILED",
+      error
+    );
+
+    // Jangan menggagalkan penyimpanan utama.
+    // JSONBin sudah berhasil disimpan.
+  }
+};
+
   const saveSchedulerRef = useRef(null);
 
   if (!saveSchedulerRef.current) {
     saveSchedulerRef.current = createSaveScheduler({
-      saveDb,
+      saveDb: saveDbWithShadow,
       setSaveState,
       delay: 600,
     });
