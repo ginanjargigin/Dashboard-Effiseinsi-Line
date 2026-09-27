@@ -27,6 +27,17 @@ import GlobalStyle from "./src/components/layout/GlobalStyle";
 import {
   AlertTriangle,
 } from "lucide-react";
+import { testSupabaseConnection } from "./src/services/supabaseTest";
+
+useEffect(() => {
+  testSupabaseConnection()
+    .then((result) => {
+      console.log("SUPABASE TEST RESULT:", result);
+    })
+    .catch((error) => {
+      console.error("SUPABASE TEST ERROR:", error);
+    });
+}, []);
 
 
 /* ----------------------------------- App ------------------------------------- */
