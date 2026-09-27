@@ -74,7 +74,7 @@ export default function App() {
         console.error("Supabase connection error:", e);
 
         let message =
-          "Tidak dapat terhubung ke server JSONBin. Periksa koneksi internet.";
+          "Tidak dapat terhubung ke database Supabase.... Periksa koneksi internet.";
 
         if (e?.type === "ACCESS_KEY_INVALID") {
           message =
