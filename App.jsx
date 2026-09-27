@@ -6,6 +6,7 @@ import React, {
 
 import { saveDb } from "./src/services/jsonbinService";
 import { initializeDb } from "./src/services/dbService";
+import { saveDbToSupabase } from "./src/services/supabaseWriteService";
 import { createSaveScheduler } from "./src/services/saveService";
 
 import { C } from "./src/constants/appConstants";
@@ -27,6 +28,7 @@ import GlobalStyle from "./src/components/layout/GlobalStyle";
 import {
   AlertTriangle,
 } from "lucide-react";
+
 
 
 /* ----------------------------------- App ------------------------------------- */
@@ -58,6 +60,8 @@ export default function App() {
 
   const mk = monthKeyOf(date);
 
+
+
   useEffect(() => {
     (async () => {
       try {
@@ -67,10 +71,10 @@ export default function App() {
         setSheetId(remote.sheets[0].id);
         setReady(true);
       } catch (e) {
-        console.error("JSONBin connection error:", e);
+        console.error("Supabase connection error:", e);
 
         let message =
-          "Tidak dapat terhubung ke server JSONBin. Periksa koneksi internet.";
+          "Tidak dapat terhubung ke database Supabase.... Periksa koneksi internet.";
 
         if (e?.type === "ACCESS_KEY_INVALID") {
           message =
@@ -98,11 +102,34 @@ export default function App() {
     })();
   }, []);
 
+ const saveDbWithBackup = async (nextDb) => {
+  // PRIMARY: Supabase
+  await saveDbToSupabase(nextDb);
+
+  console.log(
+    "SUPABASE PRIMARY SAVE: SUCCESS"
+  );
+
+  // BACKUP: JSONBin
+  try {
+    await saveDb(nextDb);
+
+    console.log(
+      "JSONBIN BACKUP SAVE: SUCCESS"
+    );
+  } catch (error) {
+    console.warn(
+      "JSONBIN BACKUP SAVE: FAILED",
+      error
+    );
+  }
+};
+
   const saveSchedulerRef = useRef(null);
 
   if (!saveSchedulerRef.current) {
     saveSchedulerRef.current = createSaveScheduler({
-      saveDb,
+      saveDb: saveDbWithBackup,
       setSaveState,
       delay: 600,
     });
@@ -123,8 +150,9 @@ export default function App() {
   };
 
   const monthData = (db && db.months[mk]) || {};
- const {
+const {
   updateEntry,
+  updateNgEntry,
   updateNote,
   clearEntry,
   addSheet,
@@ -134,6 +162,9 @@ export default function App() {
   updateMetric,
   removeMetric,
   moveSheet,
+  addNgType,
+  updateNgType,
+  removeNgType,
 } = useAppActions({
   setDb,
   setSheetId,
@@ -218,14 +249,15 @@ export default function App() {
 
       {view === "input" && (
         <InputView
-          sheet={currentSheet}
-          date={date}
-          setDate={setDate}
-          monthData={monthData}
-          updateEntry={updateEntry}
-          updateNote={updateNote}
-          clearEntry={clearEntry}
-        />
+        sheet={currentSheet}
+        date={date}
+        setDate={setDate}
+        monthData={monthData}
+        updateEntry={updateEntry}
+        updateNgEntry={updateNgEntry}
+        updateNote={updateNote}
+        clearEntry={clearEntry}
+      />
       )}
 
       {view === "dashboard" && (
@@ -241,18 +273,21 @@ export default function App() {
       )}
 
       {view === "settings" && (
-        <SettingsView
-          sheets={sheets}
-          addSheet={addSheet}
-          removeSheet={removeSheet}
-          updateSheetName={updateSheetName}
-          addMetric={addMetric}
-          updateMetric={updateMetric}
-          removeMetric={removeMetric}
-          moveSheet={moveSheet}
-          theme={theme}
-          setTheme={setTheme}
-        />
+       <SettingsView
+        sheets={sheets}
+        addSheet={addSheet}
+        removeSheet={removeSheet}
+        updateSheetName={updateSheetName}
+        addMetric={addMetric}
+        updateMetric={updateMetric}
+        removeMetric={removeMetric}
+        moveSheet={moveSheet}
+        theme={theme}
+        setTheme={setTheme}
+        addNgType={addNgType}
+        updateNgType={updateNgType}
+        removeNgType={removeNgType}
+      />
       )}
     </div>
   );

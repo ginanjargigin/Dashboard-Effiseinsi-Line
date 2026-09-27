@@ -8,7 +8,9 @@ export function updateEntryInDb(
   metricId,
   field,
   raw
-) {
+) 
+
+{
   const val = clampInt(raw);
 
   const next = {
@@ -34,6 +36,59 @@ export function updateEntryInDb(
     ...(monthObj[sheetId][date][metricId] || {}),
     [field]: val,
   };
+
+  next.months[mk] = monthObj;
+
+  return next;
+}
+export function updateNgEntryInDb(
+  db,
+  mk,
+  sheetId,
+  date,
+  ngTypeId,
+  raw
+) {
+  const val = clampInt(raw);
+
+  const next = {
+    ...db,
+    months: {
+      ...db.months,
+    },
+  };
+
+  const monthObj = {
+    ...(next.months[mk] || {}),
+  };
+
+  monthObj[sheetId] = {
+    ...(monthObj[sheetId] || {}),
+  };
+
+  monthObj[sheetId][date] = {
+    ...(monthObj[sheetId][date] || {}),
+  };
+
+  const dayObj = monthObj[sheetId][date];
+
+  const currentNg = {
+    ...(dayObj.ng || {}),
+  };
+
+  if (val === 0) {
+    delete currentNg[ngTypeId];
+  } else {
+    currentNg[ngTypeId] = val;
+  }
+
+  if (Object.keys(currentNg).length === 0) {
+    delete dayObj.ng;
+  } else {
+    dayObj.ng = currentNg;
+  }
+
+  monthObj[sheetId][date] = dayObj;
 
   next.months[mk] = monthObj;
 
