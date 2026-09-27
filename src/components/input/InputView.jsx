@@ -59,6 +59,7 @@ export default function InputView({
   setDate,
   monthData,
   updateEntry,
+  updateNgEntry,
   updateNote,
   clearEntry,
 }) {
@@ -66,10 +67,40 @@ export default function InputView({
   const dim = daysInMonth(mk);
 
   const entry =
-    (monthData[sheet.id] && monthData[sheet.id][date]) || {};
+    (monthData[sheet.id] &&
+      monthData[sheet.id][date]) ||
+    {};
 
   const note =
-    typeof entry.note === "string" ? entry.note : "";
+    typeof entry.note === "string"
+      ? entry.note
+      : "";
+
+  /*
+   * NG CHARACTERISTICS
+   *
+   * Data berasal dari sheet.ngTypes.
+   * Jika belum ada, gunakan array kosong supaya
+   * component tetap aman.
+   */
+  const ngTypes = Array.isArray(sheet.ngTypes)
+    ? sheet.ngTypes
+    : [];
+
+  /*
+   * NG DATA HARI INI
+   *
+   * Struktur legacy:
+   *
+   * entry.ng = {
+   *   ngTypeId: quantity
+   * }
+   */
+  const ngData =
+    entry.ng &&
+    typeof entry.ng === "object"
+      ? entry.ng
+      : {};
 
   const rows = sheet.metrics.map((m) => {
     const v = entry[m.id] || {};
@@ -90,18 +121,23 @@ export default function InputView({
     0
   );
 
-  const validRows = rows.filter((r) => r.pct !== null);
+  const validRows = rows.filter(
+    (r) => r.pct !== null
+  );
 
   const avgPct = validRows.length
-    ? validRows.reduce((a, r) => a + r.pct, 0) /
-      validRows.length
+    ? validRows.reduce(
+        (a, r) => a + r.pct,
+        0
+      ) / validRows.length
     : null;
 
   const filledDays = Object.keys(
     monthData[sheet.id] || {}
   )
     .filter((d) => {
-      const dayEntry = monthData[sheet.id][d] || {};
+      const dayEntry =
+        monthData[sheet.id][d] || {};
 
       return sheet.metrics.some((m) => {
         const value = dayEntry[m.id];
@@ -116,7 +152,9 @@ export default function InputView({
     .sort();
 
   const shiftDate = (delta) => {
-    const d = new Date(date + "T00:00:00");
+    const d = new Date(
+      date + "T00:00:00"
+    );
 
     d.setDate(d.getDate() + delta);
 
@@ -148,8 +186,8 @@ export default function InputView({
           title="Tanggal Sebelumnya"
           onClick={() => shiftDate(-1)}
           style={{
-              ...inputIconBtnStyle,
-              flex: "0 0 44px",
+            ...inputIconBtnStyle,
+            flex: "0 0 44px",
           }}
         >
           <ChevronLeft size={18} />
@@ -177,7 +215,9 @@ export default function InputView({
             type="date"
             lang="id-ID"
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(e) =>
+              setDate(e.target.value)
+            }
             style={{
               width: "100%",
               minWidth: 0,
@@ -193,7 +233,8 @@ export default function InputView({
               padding: "10px 12px 10px 34px",
               color: C.text,
               fontSize: 14,
-              fontFamily: "'IBM Plex Mono', monospace",
+              fontFamily:
+                "'IBM Plex Mono', monospace",
             }}
           />
         </div>
@@ -202,10 +243,10 @@ export default function InputView({
           title="Tanggal Berikutnya"
           onClick={() => shiftDate(1)}
           style={{
-             ...inputIconBtnStyle,
+            ...inputIconBtnStyle,
             flex: "0 0 44px",
           }}
-          >
+        >
           <ChevronRight size={18} />
         </button>
 
@@ -213,17 +254,16 @@ export default function InputView({
           onClick={() => setDate(todayISO())}
           title="Hari Ini"
           style={{
-              background: C.panel,
-              border: `1px solid ${C.amber}`,
-              color: C.text,
-              borderRadius: 10,
-              minWidth: 105,
-              flex: "0 0 105px",
-              height: 44,
-              padding: "0 14px",
-              cursor: "pointer",
-              
-            }}
+            background: C.panel,
+            border: `1px solid ${C.amber}`,
+            color: C.text,
+            borderRadius: 10,
+            minWidth: 105,
+            flex: "0 0 105px",
+            height: 44,
+            padding: "0 14px",
+            cursor: "pointer",
+          }}
         >
           <CalendarCheck
             size={18}
@@ -262,7 +302,11 @@ export default function InputView({
           className="note-field"
           value={note}
           onChange={(e) =>
-            updateNote(sheet.id, date, e.target.value)
+            updateNote(
+              sheet.id,
+              date,
+              e.target.value
+            )
           }
           placeholder="Tulis problem, kendala, downtime, atau kejadian penting hari ini..."
           rows={3}
@@ -278,7 +322,8 @@ export default function InputView({
             color: C.text,
             fontSize: 13,
             lineHeight: 1.45,
-            fontFamily: "'Inter', sans-serif",
+            fontFamily:
+              "'Inter', sans-serif",
             outline: "none",
             boxSizing: "border-box",
           }}
@@ -294,6 +339,111 @@ export default function InputView({
           Tersimpan otomatis setelah perubahan.
         </div>
       </div>
+
+      {/* ============================================================
+          NG HARI INI
+         ============================================================ */}
+      {ngTypes.length > 0 && (
+        <div
+          style={{
+            background: C.panel,
+            border: `1px solid ${C.line}`,
+            borderRadius: 12,
+            padding: 12,
+            marginBottom: 16,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: C.muted,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              marginBottom: 10,
+            }}
+          >
+            NG HARI INI
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gap: 8,
+            }}
+          >
+            {ngTypes.map((ngType) => {
+              const value =
+                ngData[ngType.id] ?? 0;
+
+              return (
+                <div
+                  key={ngType.id}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "minmax(0, 1fr) 90px",
+                    gap: 8,
+                    alignItems: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 13,
+                      color: C.text,
+                      fontWeight: 600,
+                      minWidth: 0,
+                    }}
+                  >
+                    {ngType.name}
+                  </div>
+
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={value}
+                    onChange={(e) =>
+                      updateNgEntry(
+                        sheet.id,
+                        date,
+                        ngType.id,
+                        e.target.value
+                      )
+                    }
+                    style={{
+                      width: "100%",
+                      boxSizing: "border-box",
+                      height: 38,
+                      padding: "0 10px",
+                      borderRadius: 8,
+                      border: `1px solid ${C.line}`,
+                      background:
+                        "var(--color-input)",
+                      color: C.text,
+                      fontSize: 14,
+                      fontWeight: 700,
+                      textAlign: "right",
+                      outline: "none",
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          <div
+            style={{
+              marginTop: 8,
+              fontSize: 10.5,
+              color: C.muted,
+            }}
+          >
+            Masukkan jumlah NG untuk setiap
+            karakteristik pada tanggal ini.
+          </div>
+        </div>
+      )}
 
       {/* SUMMARY */}
       <div
@@ -427,7 +577,9 @@ export default function InputView({
                     qtyStd(v.menit, m.ct)
                   );
                 })
-                .filter((p) => p !== null);
+                .filter(
+                  (p) => p !== null
+                );
 
               const avg = pcts.length
                 ? pcts.reduce(
@@ -446,10 +598,12 @@ export default function InputView({
                     fontSize: 12,
                     cursor: "pointer",
                     border: `1px solid ${
-                      d === date ? C.amber : C.line
+                      d === date
+                        ? C.amber
+                        : C.line
                     }`,
-                   background:
-                     d === date
+                    background:
+                      d === date
                         ? "var(--color-accent-soft)"
                         : C.panel,
                     color: C.text,
@@ -467,7 +621,8 @@ export default function InputView({
                       width: 6,
                       height: 6,
                       borderRadius: "50%",
-                      background: statusColor(avg),
+                      background:
+                        statusColor(avg),
                       display: "inline-block",
                     }}
                   />
