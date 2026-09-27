@@ -1,6 +1,26 @@
-import { createSheet, addSheetToDb, removeSheetFromDb, updateSheetNameInDb, addMetricToDb, updateMetricInDb, removeMetricFromDb, moveSheetInDb } from "../utils/sheetUtils";
+import {
+  createSheet,
+  addSheetToDb,
+  removeSheetFromDb,
+  updateSheetNameInDb,
+  addMetricToDb,
+  updateMetricInDb,
+  removeMetricFromDb,
+  moveSheetInDb,
+} from "../utils/sheetUtils";
 
-import { updateEntryInDb, updateNoteInDb, clearEntryInDb } from "../utils/monthDataUtils";
+import {
+  updateEntryInDb,
+  updateNgEntryInDb,
+  updateNoteInDb,
+  clearEntryInDb,
+} from "../utils/monthDataUtils";
+
+import {
+  addNgTypeToDb,
+  updateNgTypeInDb,
+  removeNgTypeFromDb,
+} from "../utils/ngUtils";
 
 export function useAppActions({
   setDb,
@@ -9,36 +29,175 @@ export function useAppActions({
   mk,
   scheduleSave,
 }) {
-  const updateEntry = (sId, d, metricId, field, raw) => {
+  /* ================================
+     NG TYPE
+  ================================= */
+
+  const addNgType = (sId, name) => {
     setDb((prev) => {
-      const next = updateEntryInDb(prev, mk, sId, d, metricId, field, raw);
+      const next = addNgTypeToDb(
+        prev,
+        sId,
+        name
+      );
+
       scheduleSave(next);
+
       return next;
     });
   };
 
-  const updateNote = (sId, d, note) => {
+  const updateNgType = (
+    sId,
+    ngTypeId,
+    name
+  ) => {
     setDb((prev) => {
-      const next = updateNoteInDb(prev, mk, sId, d, note);
+      const next = updateNgTypeInDb(
+        prev,
+        sId,
+        ngTypeId,
+        name
+      );
+
       scheduleSave(next);
+
       return next;
     });
   };
 
-  const clearEntry = (sId, d) => {
+  const removeNgType = (
+    sId,
+    ngTypeId
+  ) => {
     setDb((prev) => {
-      const next = clearEntryInDb(prev, mk, sId, d);
+      const next = removeNgTypeFromDb(
+        prev,
+        sId,
+        ngTypeId
+      );
+
       scheduleSave(next);
+
       return next;
     });
   };
+
+  /* ================================
+     PRODUCTION ENTRY
+  ================================= */
+
+  const updateEntry = (
+    sId,
+    d,
+    metricId,
+    field,
+    raw
+  ) => {
+    setDb((prev) => {
+      const next = updateEntryInDb(
+        prev,
+        mk,
+        sId,
+        d,
+        metricId,
+        field,
+        raw
+      );
+
+      scheduleSave(next);
+
+      return next;
+    });
+  };
+
+  /* ================================
+     NG DAILY ENTRY
+  ================================= */
+
+  const updateNgEntry = (
+    sId,
+    d,
+    ngTypeId,
+    raw
+  ) => {
+    setDb((prev) => {
+      const next = updateNgEntryInDb(
+        prev,
+        mk,
+        sId,
+        d,
+        ngTypeId,
+        raw
+      );
+
+      scheduleSave(next);
+
+      return next;
+    });
+  };
+
+  /* ================================
+     DAILY NOTE
+  ================================= */
+
+  const updateNote = (
+    sId,
+    d,
+    note
+  ) => {
+    setDb((prev) => {
+      const next = updateNoteInDb(
+        prev,
+        mk,
+        sId,
+        d,
+        note
+      );
+
+      scheduleSave(next);
+
+      return next;
+    });
+  };
+
+  /* ================================
+     CLEAR DAILY ENTRY
+  ================================= */
+
+  const clearEntry = (
+    sId,
+    d
+  ) => {
+    setDb((prev) => {
+      const next = clearEntryInDb(
+        prev,
+        mk,
+        sId,
+        d
+      );
+
+      scheduleSave(next);
+
+      return next;
+    });
+  };
+
+  /* ================================
+     SHEET
+  ================================= */
 
   const addSheet = (name) => {
     const s = createSheet(name);
 
     setDb((prev) => {
-      const next = addSheetToDb(prev, s);
+      const next = addSheetToDb(
+        prev,
+        s
+      );
+
       scheduleSave(next);
+
       return next;
     });
 
@@ -47,68 +206,146 @@ export function useAppActions({
 
   const removeSheet = (sId) => {
     setDb((prev) => {
-      const next = removeSheetFromDb(prev, sId);
+      const next = removeSheetFromDb(
+        prev,
+        sId
+      );
 
       scheduleSave(next);
 
-      if (sheetId === sId && next.sheets.length) {
-        setSheetId(next.sheets[0].id);
+      if (
+        sheetId === sId &&
+        next.sheets.length
+      ) {
+        setSheetId(
+          next.sheets[0].id
+        );
       }
 
       return next;
     });
   };
 
-  const updateSheetName = (sId, name) => {
+  const updateSheetName = (
+    sId,
+    name
+  ) => {
     setDb((prev) => {
-      const next = updateSheetNameInDb(prev, sId, name);
+      const next = updateSheetNameInDb(
+        prev,
+        sId,
+        name
+      );
+
       scheduleSave(next);
+
       return next;
     });
   };
+
+  /* ================================
+     METRIC
+  ================================= */
 
   const addMetric = (sId) => {
     setDb((prev) => {
-      const next = addMetricToDb(prev, sId);
+      const next = addMetricToDb(
+        prev,
+        sId
+      );
+
       scheduleSave(next);
+
       return next;
     });
   };
 
-  const updateMetric = (sId, mId, field, value) => {
+  const updateMetric = (
+    sId,
+    mId,
+    field,
+    value
+  ) => {
     setDb((prev) => {
-      const next = updateMetricInDb(prev, sId, mId, field, value);
+      const next = updateMetricInDb(
+        prev,
+        sId,
+        mId,
+        field,
+        value
+      );
+
       scheduleSave(next);
+
       return next;
     });
   };
 
-  const removeMetric = (sId, mId) => {
+  const removeMetric = (
+    sId,
+    mId
+  ) => {
     setDb((prev) => {
-      const next = removeMetricFromDb(prev, sId, mId);
+      const next = removeMetricFromDb(
+        prev,
+        sId,
+        mId
+      );
+
       scheduleSave(next);
+
       return next;
     });
   };
 
-  const moveSheet = (sId, direction) => {
+  /* ================================
+     SHEET ORDER
+  ================================= */
+
+  const moveSheet = (
+    sId,
+    direction
+  ) => {
     setDb((prev) => {
-      const next = moveSheetInDb(prev, sId, direction);
+      const next = moveSheetInDb(
+        prev,
+        sId,
+        direction
+      );
+
       scheduleSave(next);
+
       return next;
     });
   };
+
+  /* ================================
+     RETURN ACTIONS
+  ================================= */
 
   return {
+    // Production
     updateEntry,
+
+    // NG
+    updateNgEntry,
+    addNgType,
+    updateNgType,
+    removeNgType,
+
+    // Daily
     updateNote,
     clearEntry,
+
+    // Sheet
     addSheet,
     removeSheet,
     updateSheetName,
+    moveSheet,
+
+    // Metric
     addMetric,
     updateMetric,
     removeMetric,
-    moveSheet,
   };
 }
