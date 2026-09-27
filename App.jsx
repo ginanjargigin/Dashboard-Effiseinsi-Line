@@ -28,8 +28,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-
-
+import { testSupabaseConnection } from "./src/services/supabaseTest";
 
 /* ----------------------------------- App ------------------------------------- */
 
@@ -59,6 +58,16 @@ export default function App() {
 
 
   const mk = monthKeyOf(date);
+
+  useEffect(() => {
+  testSupabaseConnection()
+    .then((result) => {
+      console.log("SUPABASE FULL TEST RESULT:", result);
+    })
+    .catch((error) => {
+      console.error("SUPABASE FULL TEST ERROR:", error);
+    });
+}, []);
 
   useEffect(() => {
     (async () => {
