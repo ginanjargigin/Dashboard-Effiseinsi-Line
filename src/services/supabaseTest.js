@@ -1,37 +1,114 @@
 import { supabase } from "./supabaseClient";
 
+async function getExactCount(table) {
+  const { count, error } = await supabase
+    .from(table)
+    .select("*", {
+      count: "exact",
+      head: true,
+    });
+
+  if (error) {
+    throw new Error(
+      `Gagal menghitung ${table}: ${error.message}`
+    );
+  }
+
+  return count ?? 0;
+}
+
+async function getAllEntries() {
+  const pageSize = 1000;
+  let from = 0;
+  let allRows = [];
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("production_entries")
+      .select("pcs, menit")
+      .range(from, from + pageSize - 1);
+
+    if (error) {
+      throw new Error(
+        `Gagal membaca production_entries: ${error.message}`
+      );
+    }
+
+    allRows = allRows.concat(data ?? []);
+
+    if (!data || data.length < pageSize) {
+      break;
+    }
+
+    from += pageSize;
+  }
+
+  return allRows;
+}
+
+async function getAllNgEntries() {
+  const { data, error } = await supabase
+    .from("production_ng_entries")
+    .select("quantity");
+
+  if (error) {
+    throw new Error(
+      `Gagal membaca production_ng_entries: ${error.message}`
+    );
+  }
+
+  return data ?? [];
+}
+
 export async function testSupabaseConnection() {
-  const { data: sheets, error: sheetsError } = await supabase
-    .from("production_sheets")
-    .select("id, name")
-    .order("name");
+  const [
+    sheets,
+    metrics,
+    days,
+    entriesCount,
+    ngTypes,
+    ngEntriesCount,
+  ] = await Promise.all([
+    getExactCount("production_sheets"),
+    getExactCount("production_metrics"),
+    getExactCount("production_days"),
+    getExactCount("production_entries"),
+    getExactCount("production_ng_types"),
+    getExactCount("production_ng_entries"),
+  ]);
 
-  if (sheetsError) {
-    throw new Error(
-      `Gagal membaca production_sheets: ${sheetsError.message}`
-    );
-  }
+  const entries = await getAllEntries();
+  const ngEntries = await getAllNgEntries();
 
-  const { data: metrics, error: metricsError } = await supabase
-    .from("production_metrics")
-    .select("id, sheet_id, name, ct")
-    .order("sheet_id")
-    .order("name");
+  const pcsSum = entries.reduce(
+    (sum, row) => sum + Number(row.pcs || 0),
+    0
+  );
 
-  if (metricsError) {
-    throw new Error(
-      `Gagal membaca production_metrics: ${metricsError.message}`
-    );
-  }
+  const menitSum = entries.reduce(
+    (sum, row) => sum + Number(row.menit || 0),
+    0
+  );
 
-  console.log("=== SUPABASE READ TEST ===");
-  console.log("Sheets:", sheets?.length ?? 0);
-  console.log("Metrics:", metrics?.length ?? 0);
-  console.log("Sheets data:", sheets);
-  console.log("Metrics data:", metrics);
+  const totalNg = ngEntries.reduce(
+    (sum, row) => sum + Number(row.quantity || 0),
+    0
+  );
 
-  return {
-    sheets: sheets ?? [],
-    metrics: metrics ?? [],
+  const result = {
+    sheets,
+    metrics,
+    days,
+    entries: entriesCount,
+    ngTypes,
+    ngEntries: ngEntriesCount,
+    pcsSum,
+    menitSum,
+    totalNg,
   };
+
+  console.log("=== SUPABASE FULL READ TEST ===");
+  console.table(result);
+
+  return result;
 }
