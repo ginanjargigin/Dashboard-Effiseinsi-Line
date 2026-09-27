@@ -28,7 +28,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-
+import { testSupabaseAdapter } from "./src/services/supabaseAdapterTest";
 
 /* ----------------------------------- App ------------------------------------- */
 
@@ -59,7 +59,21 @@ export default function App() {
 
   const mk = monthKeyOf(date);
 
- 
+ useEffect(() => {
+  testSupabaseAdapter()
+    .then(({ result }) => {
+      console.log(
+        "SUPABASE ADAPTER RESULT:",
+        result
+      );
+    })
+    .catch((error) => {
+      console.error(
+        "SUPABASE ADAPTER ERROR:",
+        error
+      );
+    });
+}, []);
 
   useEffect(() => {
     (async () => {
