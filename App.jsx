@@ -4,7 +4,6 @@ import React, {
   useRef,
 } from "react";
 
-import { saveDb } from "./src/services/jsonbinService";
 import { initializeDb } from "./src/services/dbService";
 import { saveDbToSupabase } from "./src/services/supabaseWriteService";
 import { createSaveScheduler } from "./src/services/saveService";
@@ -102,34 +101,19 @@ export default function App() {
     })();
   }, []);
 
- const saveDbWithBackup = async (nextDb) => {
-  // PRIMARY: Supabase
+const saveDbToSupabaseOnly = async (nextDb) => {
   await saveDbToSupabase(nextDb);
 
   console.log(
     "SUPABASE PRIMARY SAVE: SUCCESS"
   );
-
-  // BACKUP: JSONBin
-  try {
-    await saveDb(nextDb);
-
-    console.log(
-      "JSONBIN BACKUP SAVE: SUCCESS"
-    );
-  } catch (error) {
-    console.warn(
-      "JSONBIN BACKUP SAVE: FAILED",
-      error
-    );
-  }
 };
 
   const saveSchedulerRef = useRef(null);
 
   if (!saveSchedulerRef.current) {
     saveSchedulerRef.current = createSaveScheduler({
-      saveDb: saveDbWithBackup,
+      saveDb: saveDbToSupabaseOnly,
       setSaveState,
       delay: 600,
     });
