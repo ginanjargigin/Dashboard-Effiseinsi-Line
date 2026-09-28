@@ -72,29 +72,11 @@ export default function App() {
       } catch (e) {
         console.error("Supabase connection error:", e);
 
-        let message =
-          "Tidak dapat terhubung ke database Supabase.... Periksa koneksi internet.";
-
-        if (e?.type === "ACCESS_KEY_INVALID") {
-          message =
-            "Access Key JSONBin tidak valid. Periksa Access Key yang digunakan aplikasi.";
-        } else if (e?.type === "ACCESS_DENIED") {
-          message =
-            "Akses ke Bin JSONBin ditolak. Periksa izin Access Key.";
-        } else if (e?.type === "BIN_NOT_FOUND") {
-          message =
-            "Bin JSONBin tidak ditemukan. Periksa Bin ID.";
-        } else if (e?.type === "RATE_LIMIT") {
-          message =
-            "Terlalu banyak permintaan ke JSONBin. Silakan coba lagi beberapa saat.";
-        } else if (e?.type === "SERVER_ERROR") {
-          message =
-            `JSONBin sedang mengalami gangguan (HTTP ${e.status}). Data kamu tidak hilang. Silakan coba lagi beberapa saat.`;
-        } else if (e?.type === "INVALID_RESPONSE") {
-          message =
-            "JSONBin memberikan respons yang tidak valid. Silakan coba lagi.";
-        }
-
+       
+        const message =
+          e?.message ||
+          "Tidak dapat terhubung ke database Supabase. Periksa koneksi internet.";
+        
         setLoadError(message);
         setReady(true);
       }
