@@ -21,3 +21,21 @@ export async function saveDbToSupabase(db) {
 
   return data;
 }
+export async function deleteNgTypeFromSupabase(
+  ngTypeId
+) {
+  const { data, error } = await supabase.rpc(
+    "delete_production_ng_type",
+    {
+      p_ng_type_id: ngTypeId,
+    }
+  );
+
+  if (error) {
+    throw new Error(
+      `Gagal menghapus NG characteristic: ${error.message}`
+    );
+  }
+
+  return data;
+}
