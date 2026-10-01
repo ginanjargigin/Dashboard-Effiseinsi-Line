@@ -84,15 +84,17 @@ export default function App() {
   }, []);
 
 const saveDbToSupabaseOnly = async (nextDb) => {
-  console.log("SAVE DEBUG:", {
-    sheetId,
-    date,
-    month: date?.slice(0, 7),
-    currentDateData:
-      nextDb?.months?.[date?.slice(0, 7)]?.[sheetId]?.[date],
-    monthData:
-      nextDb?.months?.[date?.slice(0, 7)]?.[sheetId],
-  });
+  const october = nextDb?.months?.["2026-10"] || {};
+
+  console.log(
+    "SAVE DEBUG 2026-10-01:",
+    Object.entries(october).map(
+      ([id, sheetData]) => ({
+        sheetId: id,
+        data: sheetData?.["2026-10-01"],
+      })
+    )
+  );
 
   await saveDbToSupabase(nextDb);
 
