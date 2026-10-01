@@ -84,6 +84,11 @@ export default function App() {
   }, []);
 
 const saveDbToSupabaseOnly = async (nextDb) => {
+  console.log(
+    "SAVE DEBUG 2026-10-01:",
+    nextDb?.months?.["2026-10"]?.[sheetId]?.["2026-10-01"]
+  );
+
   await saveDbToSupabase(nextDb);
 
   console.log(
