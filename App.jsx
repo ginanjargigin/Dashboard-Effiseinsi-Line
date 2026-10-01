@@ -84,16 +84,19 @@ export default function App() {
   }, []);
 
 const saveDbToSupabaseOnly = async (nextDb) => {
-  console.log(
-    "SAVE DEBUG 2026-10-01:",
-    nextDb?.months?.["2026-10"]?.[sheetId]?.["2026-10-01"]
-  );
+  console.log("SAVE DEBUG:", {
+    sheetId,
+    date,
+    month: date?.slice(0, 7),
+    currentDateData:
+      nextDb?.months?.[date?.slice(0, 7)]?.[sheetId]?.[date],
+    monthData:
+      nextDb?.months?.[date?.slice(0, 7)]?.[sheetId],
+  });
 
   await saveDbToSupabase(nextDb);
 
-  console.log(
-    "SUPABASE PRIMARY SAVE: SUCCESS"
-  );
+  console.log("SUPABASE PRIMARY SAVE: SUCCESS");
 };
 
   const saveSchedulerRef = useRef(null);
