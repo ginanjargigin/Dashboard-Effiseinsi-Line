@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { C } from "../../constants/appConstants";
 
 export default function MetricCard({
@@ -6,10 +7,11 @@ export default function MetricCard({
   metric,
   updateEntry,
 }) {
-  const actualCt =
-    Number(metric.pcs) > 0
-      ? Number(metric.menit || 0) / Number(metric.pcs)
-      : null;
+  const pcsInputRef = useRef(null);
+
+useEffect(() => {
+  pcsInputRef.current?.focus();
+}, [sheetId, date]);
 
   /* ----------------------------------
      KEYBOARD NAVIGATION
@@ -214,7 +216,8 @@ export default function MetricCard({
           </label>
 
           <input
-            className="num-field num-field-input"
+            ref={pcsInputRef}
+            className="num-field num-field-input"          
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
