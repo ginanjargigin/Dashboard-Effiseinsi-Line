@@ -7,6 +7,12 @@ import { useState } from "react";
 
 const themes = [
   {
+  id: "factory-green",
+  name: "Factory Green",
+  description: "Industrial & Energetic",
+  color: "#20B486",
+},
+  {
     id: "amber",
     name: "Factory Amber",
     description: "Industrial & Production",
