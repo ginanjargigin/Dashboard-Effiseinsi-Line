@@ -7,11 +7,16 @@ export default function MetricCard({
   metric,
   updateEntry,
 }) {
-  const pcsInputRef = useRef(null);
+ const pcsInputRef = useRef(null);
 
-useEffect(() => {
-  pcsInputRef.current?.focus();
-}, [sheetId, date]);
+  const actualCt =
+    Number(metric.pcs) > 0
+      ? Number(metric.menit || 0) / Number(metric.pcs)
+      : null;
+
+  useEffect(() => {
+    pcsInputRef.current?.focus();
+  }, [sheetId, date]);
 
   /* ----------------------------------
      KEYBOARD NAVIGATION
