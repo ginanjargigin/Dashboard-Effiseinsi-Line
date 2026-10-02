@@ -536,6 +536,7 @@ export default function InputView({
             date={date}
             metric={r}
             updateEntry={updateEntry}
+             autoFocus={index === 0}
           />
         ))}
       </div>
