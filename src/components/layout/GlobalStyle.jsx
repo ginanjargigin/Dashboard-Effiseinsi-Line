@@ -120,7 +120,8 @@ export default function GlobalStyle() {
           color 0.25s ease;
       }
       :root,
-      [data-theme="midnight"] {
+      [data-theme="midnight"]
+      [data-theme="factory-green"]{
         color-scheme: dark;
       }
       
