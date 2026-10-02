@@ -529,14 +529,14 @@ export default function InputView({
           gap: 12,
         }}
       >
-        {rows.map((r) => (
+        {rows.map((r, index) => (
           <MetricCard
             key={r.id}
             sheetId={sheet.id}
             date={date}
             metric={r}
             updateEntry={updateEntry}
-             autoFocus={index === 0}
+            autoFocus={index === 0}
           />
         ))}
       </div>
