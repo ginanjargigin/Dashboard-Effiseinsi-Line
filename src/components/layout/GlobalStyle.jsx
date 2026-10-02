@@ -57,6 +57,32 @@ export default function GlobalStyle() {
   --color-muted: #94A9BD;
 }
 
+/* =========================================
+   THEME: FACTORY GREEN
+   ========================================= */
+
+[data-theme="factory-green"] {
+  --color-bg: #10191B;
+  --color-panel: #192426;
+  --color-panel-2: #202D2F;
+  --color-line: #334447;
+
+  --color-accent: #20B486;
+  --color-accent-soft: rgba(32, 180, 134, 0.12);
+  --color-accent-focus: rgba(32, 180, 134, 0.18);
+  --color-accent-shadow: rgba(32, 180, 134, 0.25);
+
+  --color-input: #202D2F;
+  --color-card-shadow: rgba(0, 0, 0, 0.28);
+  --color-accent-text: #071613;
+  --color-hover: rgba(32, 180, 134, 0.06);
+
+  --color-steel: #6FA99A;
+
+  --color-text: #E8F2EF;
+  --color-muted: #91A19E;
+}
+
 
 /* =========================================
    THEME: LIGHT CORPORATE
