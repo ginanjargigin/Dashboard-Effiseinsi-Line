@@ -6,6 +6,7 @@ export default function MetricCard({
   date,
   metric,
   updateEntry,
+  autoFocus,
 }) {
  const pcsInputRef = useRef(null);
 
@@ -14,9 +15,11 @@ export default function MetricCard({
       ? Number(metric.menit || 0) / Number(metric.pcs)
       : null;
 
-  useEffect(() => {
+ useEffect(() => {
+  if (autoFocus) {
     pcsInputRef.current?.focus();
-  }, [sheetId, date]);
+  }
+}, [autoFocus, sheetId, date]); 
 
   /* ----------------------------------
      KEYBOARD NAVIGATION
